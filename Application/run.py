@@ -142,7 +142,7 @@ class DataLoader:
                 logger.info(f"Import du fichier CSV : {csv_file}")
 
                 with open(file_path, "r", encoding="utf-8") as f:
-                    sample = f.read(4096)
+                    """sample = f.read(4096)
                     f.seek(0)
 
                     sniffer = csv.Sniffer()
@@ -156,9 +156,9 @@ class DataLoader:
                             doublequote = dialect.doublequote,
                             skipinitialspace = dialect.skipinitialspace
                         )
-                    )
+                    )"""
 
-                    df = pd.read_csv(
+                    """df = pd.read_csv(
                         f,
                         sep=";", # CHANGE séparateur indiqué manuellement car mauvaise détection automatique sur le CSV 2018. Je ne suis pas arrivé à résoudre l'erreur autrement.
                         quotechar=dialect.quotechar,
@@ -166,6 +166,13 @@ class DataLoader:
                         doublequote=dialect.doublequote,
                         skipinitialspace=dialect.skipinitialspace,
                         header=0 if has_header else None
+                    )"""
+
+                    df = pd.read_csv(
+                        f,
+                        sep=";",
+                        encoding="utf-8",
+                        header=0
                     )
 
                     try:

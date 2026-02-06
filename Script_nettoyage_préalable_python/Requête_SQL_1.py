@@ -19,13 +19,13 @@ La fonction generate_sql_create_table génère la requête SQL pour chaque fichi
 
 # Liste des chemins des fichiers CSV
 csv_paths = [
-    '/home/florian/Desktop/Base_de_donnée_ParcourStat/Application/csv/parcoursup2018.csv',
-    '/home/florian/Desktop/Base_de_donnée_ParcourStat/Application/csv/parcoursup2024.csv'
+    '/home/florian/ParcourStat/Application/csv/parcoursup2018.csv',
+    '/home/florian/ParcourStat/Application/csv/parcoursup2024.csv'
 ]
 
 # Chemins des scripts SQL de sortie
 SQL_script = "/home/florian/.local/share/DBeaverData/workspace6/General/Scripts/1_script_tables_de_travail.sql"
-app_script = "/home/florian/Desktop/Base_de_donnée_ParcourStat/Application/sql/1_script_tables_de_travail.sql"
+app_script = "/home/florian/Desktop/ParcourStat/Application/sql/1_script_tables_de_travail.sql"
 
 
 def initcap(text):
