@@ -1,0 +1,29 @@
+
+-- Début de la transaction
+BEGIN;
+
+-- Toujours utiliser le même schéma
+SET search_path TO "Test";
+
+
+create table tmp_departement(
+code_dpt VARCHAR(100),
+nom_dpt TEXT,
+nom_region TEXT
+)
+
+truncate table tmp_departement;
+
+INSERT INTO tmp_departement (code_dpt, nom_dpt, nom_region)
+SELECT DISTINCT p."Code_departemental", p."Departement_etablissement", p."Region_etablissement"
+FROM tmp_parcoursup2018 p
+WHERE p."Region_etablissement" IS NOT NULL
+UNION
+SELECT DISTINCT p2.p."Code_departemental", p2."Departement_etablissement", p2."Region_etablissement"
+FROM tmp_parcoursup2024 p2
+WHERE p2."Region_etablissement" IS NOT NULL;
+
+
+-- Fin de la transaction.
+
+COMMIT;
