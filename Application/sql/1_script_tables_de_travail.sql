@@ -283,7 +283,10 @@ SELECT
     CAST("Annee" as INT) as "Annee",
 	TRIM("Statut_etablissement_filière_formation") as "Statut_etablissement_filière_formation",
 	TRIM("Code_UAI") as "Code_UAI",
-	TRIM("Etablissement") as "Etablissement",
+	CASE 
+		WHEN TRIM("Etablissement") = '3il' THEN '3IL'
+		ELSE TRIM(INITCAP("Etablissement")) as "Etablissement",
+	END AS "Etablissement"
 	CASE 
 		WHEN TRIM(INITCAP("Departement_etablissement")) = 'Corse-Du-Sud' then '2A'
 		WHEN TRIM(INITCAP("Departement_etablissement")) = 'Haute-Corse' then '2B'

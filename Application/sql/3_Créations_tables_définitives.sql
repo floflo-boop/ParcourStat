@@ -43,6 +43,7 @@ region_id INT references region (id)
 truncate table departement;
 
 -- Insérer dans la table departement les données cibles provenant de nos tables temporaires et de la table définitive region construite ci dessus.
+-- Utilisation d'une jointure afin de créer la correspondance pour chaque donnée avec sa bonne clés étrangère.
 
 INSERT INTO departement (code, nom, region_id)
 SELECT distinct 
@@ -51,7 +52,7 @@ SELECT distinct
     r.id AS region_id
 FROM tmp_parcoursup2018 tp1
 JOIN region r
-    ON tp1."Region_etablissement" = r.nom
+    ON tp1."Region_etablissement" = r.nom 
 UNION
 SELECT DISTINCT
     tp2."Code_departemental_etablissement" AS code,
