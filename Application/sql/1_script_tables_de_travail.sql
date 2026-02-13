@@ -295,22 +295,4 @@ FROM
 
 
 
--- Mise à jour de la table tmp_2018 pour le cas des valeur "identifiant obsolète" de la colonne Code_UAI. Ils ont tous un Code UAI réel et fonctionnel en 2024. Cet UPDATE permet donc de normaliser cela.
--- Nécessaire afin d'éviter les doublons injustifié sur "identifiant obsolète" et permettre la normalisation des noms d'établissement.
-
-UPDATE "Test".tmp_parcoursup2018 tp1
-SET "Code_UAI" = tp2."Code_UAI"
-FROM "Test".tmp_parcoursup2024 tp2
-WHERE tp1."Etablissement" = tp2."Etablissement"
-AND tp1."Code_UAI" = 'identifiant obsolète'
-AND tp2."Code_UAI" != 'identifiant obsolète';
-
-
-
--- Le code UPDATE ne marche pas actuellement. Il n'y a pas de correspondance exact entre les noms des établissements 2018 et 2024 concerné
-
--- Demain, chercher les correspondances et normaliser les noms en se basant sur pacoursup 2024. Voir CSV créer à cet effet
-
-
-
 COMMIT;
