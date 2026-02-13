@@ -56,10 +56,15 @@ Créer une nouvelle base de données
 CREATE DATABASE {database_name} ;
 ```
 
+Ici, nous vous prions de créer une base de donnée nommée "ParcourStat" 
+
 Créer un nouveau schéma
 ```sql
 CREATE SCHEMA {schema_name} ;
 ```
+
+Ici, nous vous prions de créer un nouveau schéma également nommé "ParcourStat"
+
 
 ### 3. Lancer le script principal
 ```bash
