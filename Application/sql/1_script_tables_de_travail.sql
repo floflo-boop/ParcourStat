@@ -2,8 +2,10 @@
 -- Début de la transaction
 BEGIN;
 
+CREATE SCHEMA IF NOT EXISTS "ParcourStat";
+
 -- Toujours utiliser le même schéma
-SET search_path TO "Test";
+SET search_path TO "ParcourStat";
 
 
 
@@ -124,7 +126,7 @@ SELECT
 	CAST("PA_M_BP" as INT) as "Pa_m_bp",
 	TRIM("tri") as "Tri"
 FROM
-    "Test".parcoursup2018
+    parcoursup2018
 );
 
 
@@ -293,7 +295,7 @@ SELECT
 	TRIM("etablissement_id_paysage") as "Etablissement_id_paysage",
 	TRIM("composante_id_paysage") as "Composante_id_paysage"
 FROM
-    "Test".parcoursup2024
+    parcoursup2024
 );
 
 

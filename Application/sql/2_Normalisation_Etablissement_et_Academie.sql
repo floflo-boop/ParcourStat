@@ -2,7 +2,7 @@
 BEGIN;
 
 -- Toujours utiliser le même schéma
-SET search_path TO "Test";
+SET search_path TO "ParcourStat";
 
 
 /* 

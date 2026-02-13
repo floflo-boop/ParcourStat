@@ -3,7 +3,7 @@
 BEGIN;
 
 -- Toujours utiliser le même schéma
-SET search_path TO "Test";
+SET search_path TO "ParcourStat";
 
 -- Créer la table region avec auto incrémentation de clés primaire
 
@@ -167,15 +167,15 @@ LEFT JOIN academie a ON COALESCE(tp2024."Academie_etablissement", tp2018."Academ
 WHERE (tp2018."Code_UAI" IS NULL OR tp2018."Code_UAI" != 'identifiant obsolète') /*Exclusion des 'identifiants obsolète'. Cas que nous n'avons pas réussi à élucider. Il représente 60 lignes de données.*/
 ON CONFLICT (Id)
 DO UPDATE SET
-    Nom = COALESCE(EXCLUDED.Nom, "Test".etablissement.Nom),
-    Statut = COALESCE(EXCLUDED.Statut, "Test".etablissement.Statut),
-    Site_web = COALESCE(EXCLUDED.Site_web, "Test".etablissement.Site_web),
-    Adresse = COALESCE(EXCLUDED.Adresse, "Test".etablissement.Adresse),
-    Nombre_etudiants = COALESCE(EXCLUDED.Nombre_etudiants, "Test".etablissement.Nombre_etudiants),
-    Url_logo = COALESCE(EXCLUDED.Url_logo, "Test".etablissement.Url_logo),
-    Url_image = COALESCE(EXCLUDED.Url_image, "Test".etablissement.Url_image),
-    Commune_id = COALESCE(EXCLUDED.Commune_id, "Test".etablissement.Commune_id),
-    Academie_id = COALESCE(EXCLUDED.Academie_id, "Test".etablissement.Academie_id);
+    Nom = COALESCE(EXCLUDED.Nom, etablissement.Nom),
+    Statut = COALESCE(EXCLUDED.Statut, etablissement.Statut),
+    Site_web = COALESCE(EXCLUDED.Site_web, etablissement.Site_web),
+    Adresse = COALESCE(EXCLUDED.Adresse, etablissement.Adresse),
+    Nombre_etudiants = COALESCE(EXCLUDED.Nombre_etudiants, etablissement.Nombre_etudiants),
+    Url_logo = COALESCE(EXCLUDED.Url_logo, etablissement.Url_logo),
+    Url_image = COALESCE(EXCLUDED.Url_image, etablissement.Url_image),
+    Commune_id = COALESCE(EXCLUDED.Commune_id, etablissement.Commune_id),
+    Academie_id = COALESCE(EXCLUDED.Academie_id, etablissement.Academie_id);
 
 
 -- Création de la table types_formations 
