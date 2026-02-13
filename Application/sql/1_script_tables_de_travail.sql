@@ -181,7 +181,10 @@ SELECT
 	TRIM("Academie_etablissement") as "Academie_etablissement",
 	TRIM("Commune_etablissement") as "Commune_etablissement",
 	TRIM("Filiere_formation") as "Filiere_formation",
-	TRIM("Selectivite") as "Selectivite",
+	cast(case
+		when "Selectivite" = 'formation sélective' then true
+		else false
+	end as BOOLEAN) as "Selectivite",
 	TRIM("Filiere_formation_tres_agregee") as "Filiere_formation_tres_agregee",
 	TRIM("Filiere_formation detaillee") as "Filiere_formation_Detaillee",
 	TRIM("Filiere_formation.1") as "Filiere_formation.1",

@@ -135,8 +135,6 @@ truncate table etablissement;
 
 -- Insérer les données dans la table Etablissement
 
--- Utilisation d'une sous-requête avec DISTINCT pour éliminer les doublons
-
 INSERT INTO etablissement (
     Id,
     Nom,
@@ -180,6 +178,114 @@ DO UPDATE SET
     Academie_id = COALESCE(EXCLUDED.Academie_id, "Test".etablissement.Academie_id);
 
 
+-- Création de la table types_formations 
+
+create table types_formations(
+	id  SERIAL PRIMARY KEY,
+ 	nom TEXT
+);
+
+
+-- Supprimer les données de la table afin de s'assurer qu'elles soit vierge et qu'elle existe 
+
+truncate table types_formations;
+
+-- Insertion des données dans la table types_formations 
+
+INSERT INTO types_formations(nom)
+SELECT DISTINCT p."Filiere_formation_tres_agregee"
+FROM tmp_parcoursup2024 p
+UNION
+SELECT DISTINCT p2."Filiere_formation_tres_agregee"
+FROM tmp_parcoursup2018 p2 ;
+
+
+-- Création de la table discipline 
+
+CREATE TABLE discipline (
+  id  SERIAL PRIMARY KEY,
+  nom TEXT,
+  type INT REFERENCES types_formations(id)
+);
+
+-- Supprimer les données de la table afin de s'assurer qu'elles soient vierge et qu'elle existe 
+
+truncate table discipline; 
+
+-- Insertion des données dans la table discipline 
+
+insert into discipline (nom, type )
+select distinct tp."Filiere_formation" as nom, tf.id as type
+from tmp_parcoursup2024 tp
+join types_formations tf 
+on tp."Filiere_formation_tres_agregee" = tf.nom
+union 
+select distinct tp2."Filiere_formation" as nom, tf2.id as type
+from tmp_parcoursup2018 tp2
+join types_formations tf2 
+on tp2."Filiere_formation_tres_agregee" = tf2.nom;
+
+
+
+-- Création de la table Formation 
+
+CREATE TABLE formation (
+  id SERIAL PRIMARY KEY,
+  nom TEXT,
+  etablissement_id TEXT NOT NULL REFERENCES etablissement(id),
+  type_formation_id INT NOT NULL REFERENCES types_formations(id),
+  discipline_id INT NOT NULL REFERENCES discipline(id),
+  selectivite BOOL,
+  Coordonnees_GPS_formation TEXT,
+  identifiant_parcoursup TEXT
+);
+
+-- Supprimer les données de la table afin de s'assurer qu'elle est vierge et qu'elle existe. 
+
+truncate table formation; 
+
+-- Insértion des données dans la table discipline 
+
+insert into formation (
+	nom, 
+	etablissement_id, 
+	type_formation_id, 
+	discipline_id, 
+	selectivite, 
+	coordonnees_gps_formation, 
+	identifiant_parcoursup
+)
+select distinct 
+	tm."Filiere_formation_Detaillee" as nom,
+	e.id as etablissement_id,
+	tf.id as type_formation_id, 
+	d.id as discipline_id,
+	tm."Selectivite" as selectivite,
+	tm."Coordonnees_gps_formation" as coordonnees_gps_formation,
+	tm."Lien_formation_parcoursup" as identifiant_parcoursup
+from tmp_parcoursup2024 tm
+join etablissement e 
+on tm."Etablissement" = e.nom 
+join types_formations tf 
+on tm."Filiere_formation_tres_agregee" = tf.nom 
+join discipline d 
+on tm."Filiere_formation" = d.nom 
+union 
+select distinct 
+	tm."Filiere_formation_detaillee" as nom,
+	e.id as etablissement_id,
+	tf.id as type_formation_id, 
+	d.id as discipline_id,
+	null::boolean,
+	tm."Coordonnees_gps_formation" as coordonnees_gps_formation,
+	tm."Lien_formation_parcoursup" as identifiant_parcoursup
+from tmp_parcoursup2018 tm
+join etablissement e 
+on tm."Etablissement" = e.nom 
+join types_formations tf 
+on tm."Filiere_formation_tres_agregee" = tf.nom 
+join discipline d 
+on tm."Filiere_formation" = d.nom ;
 
 -- Fin de la transaction.
-COMMIT;
+COMMIT
