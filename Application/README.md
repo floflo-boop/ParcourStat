@@ -60,7 +60,7 @@ Pour installer notre base de données, il faut :
 - Créer la base de données : 
 CREATE DATABASE ParcourStat;
 - Créer le schéma au sein de la base de données :
-CREATE SCHEMA parcourstat;
+CREATE SCHEMA ParcourStat;
 - lancer la commande 'python run py' pour exécuter l'installation
 
 ## Auteurs 
