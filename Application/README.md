@@ -64,10 +64,10 @@ CREATE SCHEMA parcourstat;
 - lancer la commande 'python run py' pour exécuter l'installation
 
 ## Auteurs 
-**Florian Martin**
-Solange Cussaguet
-Anaelle Martinez
-Clotilde Long
+- Florian Martin
+- Solange Cussaguet
+- Anaelle Martinez
+- Clotilde Long
 
 
 
