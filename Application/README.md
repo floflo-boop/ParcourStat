@@ -64,7 +64,7 @@ CREATE SCHEMA parcourstat;
 - lancer la commande 'python run py' pour exécuter l'installation
 
 ## Auteurs 
-Florian Martin
+**Florian Martin**
 Solange Cussaguet
 Anaelle Martinez
 Clotilde Long
