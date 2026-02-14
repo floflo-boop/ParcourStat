@@ -116,7 +116,7 @@ SELECT
 	CAST("PA_NB_SI_MB" as INT) as "Pa_nb_si_mb",
 	CAST("PA_NB_SM_B" as INT) as "Pa_nb_sm_b",
 	CAST("PA_NB_AB" as INT) as "Pa_nb_ab",
-	CAST("PA_NB_B_MB" as INT) as "Pa_nb_b_mb", -- CHANGEMENT concerne les néo bacheliers avec mention bien. Rajout de MB pour mention bien.
+	CAST("PA_NB_B_MB" as INT) as "Pa_nb_b_mb", -- Changement : cette colonne concerne les néo bacheliers avec mention bien. Rajout de 'MB' pour mention bien.
 	CAST("PA_NB_TB" as INT) as "Pa_nb_tb",
 	CAST("PA_NB_G" as INT) as "Pa_nb_g",
 	CAST("PA_M" as INT) as "Pa_m",
@@ -132,7 +132,7 @@ FROM
 
 
 
--- Création de la table temporaire de parcourusp2024 et transformation des données (suppression des espaces et normalisation)
+-- Création de la table temporaire parcourusp2024 et transformation des données : suppression des espaces et normalisation
 
 
 CREATE TABLE TMP_parcoursup2024 AS (
@@ -189,7 +189,7 @@ SELECT
 	end as BOOLEAN) as "Selectivite",
 	TRIM("Filiere_formation_tres_agregee") as "Filiere_formation_tres_agregee",
 	TRIM("Filiere_formation detaillee") as "Filiere_formation_Detaillee",
-	TRIM("Filiere_formation_agregee") as "Filiere_formation_agregee", -- Changement. CSV origine = Filiere_formation. Comme doublon avec le précédent (juste avant le précédent case) et version agrégée de ce dernier, renommage en "Filiere_formation_agregee"
+	TRIM("Filiere_formation_agregee") as "Filiere_formation_agregee", -- Changement : renommage de "Filiere_formation" dans le CSV d'origine en "Filiere_formation_agregee" en raison d'un doublon avec le précédent (juste avant le précédent case) et version agrégée de ce dernier.
 	TRIM("Filiere_formation_detaillee_bis") as "Filiere_formation_detaillee_bis",
 	TRIM("Filiere_formation_détaillée") as "Filiere_formation_détaillée",
 	TRIM("Coordonnees_GPS_formation") as "Coordonnees_gps_formation",
@@ -261,7 +261,7 @@ SELECT
 	CAST("PA_NB_SI_MB" as INT) as "Pa_nb_si_mb",
 	CAST("PA_NB_SM" as INT) as "Pa_nb_sm",
 	CAST("PA_NB_AB" as INT) as "Pa_nb_ab",
-	CAST("PA_NB_B_MB" as INT) as "Pa_nb_b_mb", -- CHANGEMENT Concerne les néo bacheliers boursiers avec mention bien. Rajout de MB pour mention bien.
+	CAST("PA_NB_B_MB" as INT) as "Pa_nb_b_mb", -- Changement : cette colonne concerne les néo bacheliers boursiers avec mention bien. Rajout de 'MB' pour mention bien.
 	CAST("PA_NB_TB" as INT) as "Pa_nb_tb",
 	CAST("PA_NB_TB_F" as INT) as "Pa_nb_tb_f",
 	CAST("PA_NB_G" as INT) as "Pa_nb_g",

@@ -5,18 +5,18 @@ BEGIN;
 -- Toujours utiliser le même schéma
 SET search_path TO "ParcourStat";
 
--- Créer la table region avec auto incrémentation de clés primaire
+-- Création de la table region avec une auto incrémentation de la clé primaire
 
 create table region(
 	id   SERIAL PRIMARY KEY,
     nom  TEXT
 );
 
--- supprimer les données de la table pour s'assurer qu'elle soit vierge et qu'elle existe.
+-- Suppression des données de la table pour s'assurer qu'elle soit vierge et qu'elle existe.
 
 truncate table region;
 
--- Insérer dans la table region les données cibles provenant de nos deux tables temporaires. 
+-- Insertion dans la table region des données cibles provenant de nos deux tables temporaires. 
 
 INSERT INTO region(nom)
 SELECT DISTINCT p."Region_etablissement"
@@ -38,12 +38,12 @@ region_id INT references region (id)
 );
 
 
--- supprimer les données de la table pour s'assurer qu'elle soit vierge et qu'elle existe
+-- Suppression des données de la table pour s'assurer qu'elle soit vierge et qu'elle existe
 
 truncate table departement;
 
--- Insérer dans la table departement les données cibles provenant de nos tables temporaires et de la table définitive region construite ci dessus.
--- Utilisation d'une jointure afin de créer la correspondance pour chaque donnée avec sa bonne clés étrangère.
+-- Insertion dans la table departement des données cibles provenant de nos tables temporaires et de la table définitive region construite ci-dessus.
+-- Utilisation d'une jointure afin de créer la correspondance pour chaque donnée avec sa bonne clé étrangère.
 
 INSERT INTO departement (code, nom, region_id)
 SELECT distinct 
@@ -72,11 +72,11 @@ CREATE table commune (
   departement_id VARCHAR(100) REFERENCES departement(code)
 );
 
--- Supprimer les données de la table pour s'assurer qu'elle soit vierge et qu'elle existe 
+-- Supression des données de la table pour s'assurer qu'elle soit vierge et qu'elle existe 
 
 truncate table commune;
 
--- Insérer les données dans la table commune.
+-- Insertion des données dans la table commune.
 
 INSERT INTO commune (nom, departement_id)
 SELECT DISTINCT 
@@ -85,8 +85,8 @@ SELECT DISTINCT
 FROM tmp_parcoursup2024 tp -- Il n'y a pas de commune dans le jeu de donnée de 2018. On ne se base donc que sur 2024.
 INNER JOIN Departement d ON tp."Departement_etablissement" = d.nom;
 
--- Attention, en sortie on peut avoir des "doublons" par exemple Valence se repète deux fois mais à deux clés primaires différentes et deux clés étrangère 
--- vers departement qui sont différentes. Cela s'expliquer car il existe deux villes nommées Valence dans deux départements différents. C'est donc normal.
+-- Attention, en sortie on peut avoir des "doublons" par exemple Valence se repète deux fois mais à deux clés primaires différentes, et deux clés étrangères 
+-- vers departement sont différentes. Cela s'explique par le fait qu'il existe deux villes nommées Valence dans deux départements différents. C'est donc normal.
 
 
 
@@ -98,11 +98,11 @@ CREATE TABLE academie (
   nom TEXT
 );
 
--- Supprimer les données de la table pour s'assurer qu'elle soit vierge et qu'elle existe 
+-- Supression des données de la table pour s'assurer qu'elle soit vierge et qu'elle existe 
 
 truncate table academie;
 
--- Insérer les données dans la table academie
+-- Insertion des données dans la table academie
 
 insert into academie (nom)
 select distinct tp."Academie_etablissement" as nom 
@@ -128,12 +128,12 @@ CREATE TABLE etablissement (
   Academie_id  INT REFERENCES academie(id)
 );
 
--- Supprimer les données de la table pour s'assurer qu'elle soit vierge et qu'elle existe 
+-- Supression des données de la table pour s'assurer qu'elle soit vierge et qu'elle existe 
 
 truncate table etablissement;
 
 
--- Insérer les données dans la table Etablissement
+-- Insertion des données dans la table Etablissement
 
 INSERT INTO etablissement (
     Id,
@@ -147,8 +147,8 @@ INSERT INTO etablissement (
     Commune_id,
     Academie_id
 ) 
-SELECT DISTINCT ON (COALESCE(tp2024."Code_UAI", tp2018."Code_UAI")) /* On élimine un maximum de doublon à l'aide de DISTINCT et de COALESCE qui permet de sélectionner une priorité de valeur. 
-Si pour un même champs on a deux valeurs différentes, une des deux sera privéligée. Dans notre cas, en 2018 on peut avoir des NULL complété en 2024, alors on donne la priorité à 2024 */
+SELECT DISTINCT ON (COALESCE(tp2024."Code_UAI", tp2018."Code_UAI")) /* On élimine un maximum de doublons à l'aide de DISTINCT et de COALESCE qui permet de sélectionner une priorité de valeur. 
+Si, pour un même champ, il existe deux valeurs différentes, une des deux sera privéligée. Dans notre cas, des valeurs NULL en 2018 sont complétées en 2024. La priorité est donc donnée à 2024 */
     COALESCE(tp2024."Code_UAI", tp2018."Code_UAI") AS Id,
     COALESCE(tp2024."Etablissement", tp2018."Etablissement") AS Nom,
     tp2024."Statut_etablissement_filière_formation" AS Statut,
@@ -160,11 +160,11 @@ Si pour un même champs on a deux valeurs différentes, une des deux sera privé
     c.id AS Commune_id,
     a.id AS Academie_id
 FROM tmp_parcoursup2024 tp2024
-FULL OUTER JOIN tmp_parcoursup2018 tp2018 ON tp2024."Code_UAI" = tp2018."Code_UAI" /* FULL OUTER JOIN afin de garder aussi bien les établissements communs à nos tables, que ceux présents uniquement dans une des deux tables. */
+FULL OUTER JOIN tmp_parcoursup2018 tp2018 ON tp2024."Code_UAI" = tp2018."Code_UAI" /* On réalise un FULL OUTER JOIN afin de garder aussi bien les établissements communs à nos tables, que ceux présents uniquement dans une des deux tables. */
 LEFT JOIN wikidata wd ON COALESCE(tp2024."Code_UAI", tp2018."Code_UAI") = wd.etablissement_id
 LEFT JOIN commune c ON tp2024."Commune_etablissement" = c.nom
 LEFT JOIN academie a ON COALESCE(tp2024."Academie_etablissement", tp2018."Academie_etablissement") = a.nom
-WHERE (tp2018."Code_UAI" IS NULL OR tp2018."Code_UAI" != 'identifiant obsolète') /*Exclusion des 'identifiants obsolète'. Cas que nous n'avons pas réussi à élucider. Il représente 60 lignes de données.*/
+WHERE (tp2018."Code_UAI" IS NULL OR tp2018."Code_UAI" != 'identifiant obsolète') /*Exclusion des 'identifiants obsolètes'. Il s'agit du cas que nous n'avons pas réussi à élucider, et qui représente 60 lignes de données.*/
 ON CONFLICT (Id)
 DO UPDATE SET
     Nom = COALESCE(EXCLUDED.Nom, etablissement.Nom),
@@ -186,7 +186,7 @@ create table types_formations(
 );
 
 
--- Supprimer les données de la table afin de s'assurer qu'elles soit vierge et qu'elle existe 
+-- Suppression des données de la table afin de s'assurer qu'elle soit vierge et qu'elle existe 
 
 truncate table types_formations;
 
@@ -208,7 +208,7 @@ CREATE TABLE discipline (
   type INT REFERENCES types_formations(id)
 );
 
--- Supprimer les données de la table afin de s'assurer qu'elles soient vierge et qu'elle existe 
+-- Suppression des données de la table afin de s'assurer qu'elle soit vierge et qu'elle existe 
 
 truncate table discipline; 
 
@@ -240,11 +240,11 @@ CREATE TABLE formation (
   identifiant_parcoursup TEXT
 );
 
--- Supprimer les données de la table afin de s'assurer qu'elle est vierge et qu'elle existe. 
+-- Suppression des données de la table afin de s'assurer qu'elle soit vierge et qu'elle existe. 
 
 truncate table formation; 
 
--- Insértion des données dans la table discipline 
+-- Insertion des données dans la table discipline 
 
 insert into formation (
 	nom, 
