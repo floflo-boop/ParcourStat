@@ -69,6 +69,7 @@ def generate_sql_create_table(csv_path):
     END as \"{formatted_col_name}\" """)
         elif col not in string:
             cast_lignes.append(f'\tCAST("{col}" as INT) as "{formatted_col_name}"')
+
         else:
             cast_lignes.append(f'\tTRIM("{col}") as "{formatted_col_name}"')
 

@@ -6,12 +6,12 @@ BEGIN;
 SET search_path TO parcourStat_schema;
 
 
-CREATE TABLE TMP_parcoursup2018 AS (
+CREATE TABLE "Test".TMP_parcoursup2018 AS (
 SELECT
-    	CAST("Session" as INT) as "Session",
+    CAST("Session" as INT) as "Session",
 	TRIM("Code_UAI_etablissement") as "Code_uai_etablissement",
 	TRIM("Etablissement") as "Etablissement",
-	CAST("Code_departemental_etablissement" as INT) as "Code_departemental_etablissement",
+	TRIM("Code_departemental_etablissement") as "Code_departemental_etablissement",
 	TRIM("Departement_etablissement") as "Departement_etablissement",
 	TRIM("Region_etablissement") as "Region_etablissement",
 	TRIM("Academie_etablissement") as "Academie_etablissement",
@@ -98,13 +98,13 @@ FROM
 );
 
 
-CREATE TABLE TMP_parcoursup2024 AS (
+CREATE TABLE "Test".TMP_parcoursup2024 AS (
 SELECT
     	CAST("Session" as INT) as "Session",
 	TRIM("Statut_etablissement_filiere_formation_public_prive") as "Statut_etablissement_filiere_formation_public_prive",
 	TRIM("Code_UAI_etablissement") as "Code_uai_etablissement",
 	TRIM("Etablissement") as "Etablissement",
-	CAST("Code_departemental_etablissement" as INT) as "Code_departemental_etablissement",
+	CAST("Code_departemental_etablissement" as VARCHAR(100)) as "Code_departemental_etablissement",
 	TRIM("Departement_etablissement") as "Departement_etablissement",
 	TRIM("Region_etablissement") as "Region_etablissement",
 	TRIM("Academie_etablissement") as "Academie_etablissement",
