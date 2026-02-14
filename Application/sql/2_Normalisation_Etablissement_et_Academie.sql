@@ -7,19 +7,16 @@ SET search_path TO "ParcourStat";
 
 /* 
 
-Après examen de notre jeu de donnée, nous avons remarqué qu'entre 2018 et 2024 certains établissements changent de noms ou alors tout simplement leurs saisie change.
+Après examen de notre jeu de données, nous avons remarqué qu'entre 2018 et 2024 certains établissements changent de noms ou de type de saisie.
 La problématique réside dans le Code_UAI. Il ne change pas et sans normalisation on aurait deux valeurs pour un même code UAI. 
 
-Nous avons donc pensé cette requête afin de normaliser les noms des établissements communs aux deux jeux de données et cela dans nos tables temporaires. 
+Nous avons donc pensé cette requête afin de normaliser les noms des établissements communs aux deux jeux de données, au sein de tables temporaires. 
 
-Le script ce base sur le Code_UAI. Si il repère le même Code_UAI avec deux valeurs différentes dans la colonne "Etablissement" alors il normalise 
-en appliquant au jeu de donnée 2018 la valeur de 2024. 
-
-
-De cette manière, nous facilitons l'insertion des données dans les tables définitives par la suite et réduisons les conflits de clés primaire? 
+Le script se base sur le Code_UAI : s'il repère le même Code_UAI avec deux valeurs différentes dans la colonne "Etablissement", alors il normalise 
+en appliquant au jeu de donnée 2018, la valeur de 2024. 
 
 
-
+De cette manière, nous facilitons l'insertion future des données dans les tables définitives et réduisons les conflits de clés primaire.
 
 
 Nous avons également pensé cette requête pour résoudre un second problème : les code_UAI à valeur "identifiant obsolète" de 2018. 
