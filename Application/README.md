@@ -38,7 +38,7 @@ Notre base de données compte 10 tables organisées comme suit :
   - Candidatures
   - Admissions
 
-Tables de données générales sur l'enseignement supérieur :
+- Tables de données générales sur l'enseignement supérieur :
   - Disciplines
   - Formations
   - Type_formations
@@ -60,7 +60,7 @@ Pour installer notre base de données, il faut :
 - Créer la base de données : 
 CREATE DATABASE ParcourStat;
 - Créer le schéma au sein de la base de données :
-CREATE SCHEMA parcourstat;
+CREATE SCHEMA Parcourstat;
 - lancer la commande 'python run py' pour exécuter l'installation
 
 ## Auteurs 
