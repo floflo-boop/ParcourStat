@@ -1,91 +1,74 @@
-**Crédits : Maxime CHALLON // Adaptations : Lauryne LEMOSQUET**
+# ParcourStat - Base de données Parcoursup
 
-**Tout se passe (configuration, commandes dans le terminal) au sein de ce dossier dans lequel vous lisez ce fichier**
+## Description 
+ParcourStat est une base de données relationnelle fondée sur PostgreSQL qui récupère et structure des données Parcoursup issues des sessions de 2024 et de 2018 tout en permettant de les comparer. Elle permet plus globalement une analyse de l'offre de formation de l'enseignement supérieur à l'aide de données issues des candidatures et des admissions des étudiants au sein des établissements. 
 
-**Le projet doit s’exécuter avec `python run.py` sans aucune modification du code fourni, seuls le fichier .env doit être modifié.**
+## Objectifs
+Notre base de données a pour objectif de : 
+- Structurer les données Parcoursup en un modèle logique de données
+- Faciliter une comparaison entre les données de 2018 et 2024
+- Permettre une lecture des données sur l'enseignement supérieur à travers des indicateurs géographiques
+- Concrétiser l'enrichissement des données issues de wikidata pour les établissements
+- Permettre l'élaboration future de datavisualisations et, à terme, d'une application Flask
 
-## Préparation de l'environnement de travail pour le script
-
-### 1. Créer un environnement virtuel
-
-A créer dans ce dossier, à côté du `README.md` et du `run.py`
-
-Pour rappel: `virtualenv env -p python3` ou `python -m venv env`
-
-### 2. Activer cet environnement
-
-`source env/bin/activate` (ou `source env/Scripts/activate` pour Windows)
-
-### 3. Importer les bonnes dépendances dans l'environnement
-
-`pip install -r requirements.txt`
-
----
-
-## Étapes à suivre pour remplir la base
-
-### 1. Modifier le fichier `.env`
-Le fichier doit contenir toutes les variables suivantes :
-Le fichier est déjà pré remplie avec les informations de base mais vous devez y ajouter les informations d'utilisateur et de mot de passe de votre base de données PostgreSQL.
-
-```env
-pgDatabase=str
-pgUser=str
-pgPassword=str
-pgPort=int
-pgHost=str
-pgSchemaImportsCsv=str
-failOnFirstSqlError=bool
-failOnFirstCsvError=bool
-```
-
-- `pgDatabase` : nom de la base à créer/utiliser  pour importer les données et jouer les scripts. Cette base est unique pour l'ensemble du projet.
-- `pgUser` : utilisateur PostgreSQL avec lequel se connecter
-- `pgPassword` : mot de passe PostgreSQL correspondant à l'utilisateur
-- `pgHost` : adresse du serveur PostgreSQL
-- `pgPort` : port du serveur PostgreSQL  
-- `pgSchemaImportsCsv` : schéma où seront importés les CSV  sous forme de table (1 CSV = 1 table du nom du ficheir CSV)
-- `failOnFirstSqlError` : si `True`, le script s’arrête dès qu’une requête SQL échoue  
-- `failOnFirstCsvError` : si `True`, le script s’arrête dès qu’un import CSV dans la base de données échoue  
-
-### 2. Créer la base de données et le schéma
-Dans DBeaver, exécuter deux requêtes qui permettront de créer une base de données et un schéma dédié. Les informations que vous transmettez à SQL doivent correspondre aux éléments `pgDatabase` et `pgSchemaImportsCsv` du fichier .env.
-
-Créer une nouvelle base de données 
-```sql
-CREATE DATABASE {database_name} ;
-```
-
-Ici, nous vous prions de créer une base de donnée nommée "ParcourStat" 
-
-Créer un nouveau schéma
-```sql
-CREATE SCHEMA {schema_name} ;
-```
-
-Ici, nous vous prions de créer un nouveau schéma également nommé "ParcourStat"
+## Source principale de données 
+Notre base de données est fondée sur des données Parcoursup des sessions de 2018 et 2024, récupérées sous la forme de fichiers csv depuis le site du gouvernement français : 
+- https://www.data.gouv.fr/datasets/parcoursup-2018-voeux-de-poursuite-detudes-et-de-reorientation-dans-lenseignement-superieur-et-reponses-des-etablissements 
+- https://www.data.gouv.fr/datasets/parcoursup-2024-voeux-de-poursuite-detudes-et-de-reorientation-dans-lenseignement-superieur-et-reponses-des-etablissements 
 
 
-### 3. Lancer le script principal
-```bash
-python run.py
-```
-ou selon la configuration :
-```bash
-python3 run.py
-```
+## Croisement et enrichissement des données
+Les données issues de Parcoursup ont été enrichies par des données sur les établissements requêtées depuis wikidata. Ainsi, les données suivantes sur les établissements ont été ajoutées  au sein de notre base de données :
+- site web
+- adresse 
+- nombre d'étudiants
+- logo
+- image
 
----
+## Architecture de la base de données 
+Notre base de données compte 10 tables organisées comme suit : 
 
-## Fonctionnement
-- Au lancement, le script :
-  1. Charge les variables du fichier `.env`.
-  2. Vérifie si la base `pgDatabase` existe, sinon la crée.
-  3. Importe tous les fichiers CSV du dossier `csv/` dans le schéma `pgSchemaImportsCsv`.
-  4. Exécute tous les fichiers SQL du dossier `sql/`.
+- Tables de données géographiques :
+  - Académies  
+  - Communes
+  - Départements
+  - Régions 
 
-- Les logs affichent :
-  - la création de la base si nécessaire ;
-  - l’exécution des requêtes SQL ;
-  - l’import des fichiers CSV ;
-  - les erreurs éventuelles (selon les paramètres `failOnFirstSqlError` et `failOnFirstCsvError`, le script peut s'arrêter immédiatement).
+- Tables de données statistiques relatives aux étudiants : 
+  - Candidatures
+  - Admissions
+
+Tables de données générales sur l'enseignement supérieur :
+  - Disciplines
+  - Formations
+  - Type_formations
+  - Etablissements
+
+
+### Note sur les tables candidatures et admissions 
+Les tables 'Candidatures' et 'Admissions' possèdent un nombre d'attributs assez conséquent. Toutefois, ces tables sont déjà issues d'une sélection effectuée depuis les csv d'origine, et contiennent donc uniquement les données que nous souhaitons conserver. La table 'Admissions' intègre notamment des calculs de pourcentage déjà effectués au sein des données originales, utiles à notre analyse.
+
+### Contenu du dépôt 
+Ce dépôt Github contient : 
+- un dossier global 'Application'  
+- un sous-dossier 'csv' avec trois fichiers csv : parcoursup2018, parcoursup2024, wikidata
+- un sous-dossier 'sql' contenant trois scripts sql : un script de création des tables de travail, un script de normalisation des données, un script de création des tables définitives
+- un fichier 'run.py' contenant un script python qui lance la création de la base de données 
+
+## Installation de la base de données 
+Pour installer notre base de données, il faut :
+- Créer la base de données : 
+CREATE DATABASE ParcourStat;
+- Créer le schéma au sein de la base de données :
+CREATE SCHEMA parcourstat;
+- lancer la commande 'python run py' pour exécuter l'installation
+
+## Auteurs 
+Florian Martin
+Solange Cussaguet
+Anaelle Martinez
+Clotilde Long
+
+
+
+
