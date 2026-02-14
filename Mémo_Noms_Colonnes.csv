@@ -35,7 +35,7 @@ Dont effectif des admis issus de la même académie (Paris/Créteil/Versailles r
 % d’admis néo bacheliers sans information sur la mention au bac,PA_NB_SI_MB
 % d’admis néo bacheliers sans mention au bac,PA_NB_SM_B
 % d’admis néo bacheliers avec mention Assez Bien au bac,PA_NB_AB
-% d’admis néo bacheliers avec mention Bien au bac,PA_NB_MB
+% d’admis néo bacheliers avec mention Bien au bac,PA_NB_B_MB
 % d’admis néo bacheliers avec mention Très Bien au bac,PA_NB_TB
 % d’admis néo bacheliers avec mention Très Bien avec félicitations au bac,PA_NB_TB_F
 % d’admis néo bacheliers généraux,PA_NB_G

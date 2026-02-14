@@ -38,7 +38,7 @@ Notre base de données compte 10 tables organisées comme suit :
   - Candidatures
   - Admissions
 
-Tables de données générales sur l'enseignement supérieur :
+- Tables de données générales sur l'enseignement supérieur :
   - Disciplines
   - Formations
   - Type_formations
