@@ -287,5 +287,195 @@ on tm."Filiere_formation_tres_agregee" = tf.nom
 join discipline d 
 on tm."Filiere_formation" = d.nom ;
 
+
+
+
+
+
+-- Création de la table candidatures
+
+
+CREATE TABLE candidatures (
+    id SERIAL PRIMARY KEY,
+    formation_id INT NOT NULL REFERENCES formation(id),
+    annee INT NOT NULL,
+    ET_C INT,
+    ET_CF INT,
+    ET_C_PP INT,
+    EC_I INT,
+    EC_NB_G INT,
+    EC_B_NB_G INT,
+    EC_NB_T INT,
+    EC_B_NB_T INT,
+    EC_NB_P INT,
+    EC_B_NB INT,
+    EC_AC INT,
+    ETC_PC INT,
+    EC_NB_G_PC INT,
+    EC_NB_T_PC INT,
+    EC_NB_P_PC INT,
+    EAC_PC INT,
+    ETC_CE INT,
+    EC_CE_PC INT,
+    ETC_R_PA INT,
+    ETC_A_PE INT,
+    ETC_F_A_PE INT,
+    EC_TG_PA_E INT,
+    EC_B_TG_PA_E INT,
+    EC_TT_PA_E INT,
+    EC_B_TT_PA_E INT,
+    EC_TP_PA_E INT,
+    EC_B_TP_PA_E INT,
+    EAC_PA_E INT
+);
+
+
+-- Supprimer les données de la table afin de s'assurer qu'elle existe et qu'elle est vierge de données 
+
+truncate table candidatures;
+
+
+-- Insérer les données cibles dans la table. 
+
+insert into candidatures(
+    formation_id,
+    annee,
+    ET_C,
+    ET_CF,
+    ET_C_PP,
+    EC_I,
+    EC_NB_G,
+    EC_B_NB_G,
+    EC_NB_T,
+    EC_B_NB_T,
+    EC_NB_P,
+    EC_B_NB,
+    EC_AC,
+    ETC_PC,
+    EC_NB_G_PC,
+    EC_NB_T_PC,
+    EC_NB_P_PC,
+    EAC_PC,
+    ETC_CE,
+    EC_CE_PC,
+    ETC_R_PA,
+    ETC_A_PE,
+    ETC_F_A_PE,
+    EC_TG_PA_E,
+    EC_B_TG_PA_E,
+    EC_TT_PA_E,
+    EC_B_TT_PA_E,
+    EC_TP_PA_E,
+    EC_B_TP_PA_E,
+    EAC_PA_E
+)
+select distinct
+    f.id,
+    p."Annee",
+    p."ET_C",
+    p."ET_CF",
+    p."ET_C_PP",
+    p."EC_I",
+    p."EC_NB_G",
+    p."EC_B_NB_G",
+    p."EC_NB_T",
+    p."EC_B_NB_T",
+    p."EC_NB_P",
+    p."EC_B_NB",
+    p."EC_AC",
+    p."ETC_PC",
+    p."EC_NB_G_PC",
+    p."EC_NB_T_PC",
+    p."EC_NB_P_PC",
+    p."EAC_PC",
+    p."ETC_CE",
+    p."EC_CE_PC",
+    p."ETC_R_PA",
+    p."ETC_A_PE",
+    p."ETC_F_A_PE",
+    p."EC_TG_PA_E",
+    p."EC_B_TG_PA_E",
+    p."EC_TT_PA_E",
+    p."EC_B_TT_PA_E",
+    p."EC_TP_PA_E",
+    p."EC_B_TP_PA_E",
+    p."EAC_PA_E"
+from tmp_parcoursup2024 p 
+join formation f 
+on p."Filiere_formation_Detaillee" = f.nom
+union 
+select distinct
+    f.id,
+    p2."Annee",
+    p2."ET_C",
+    p2."ET_CF",
+    p2."ET_C_PP",
+    p2."EC_I",
+    p2."EC_NB_G",
+    p2."EC_B_NB_G",
+    p2."EC_NB_T",
+    p2."EC_B_NB_T",
+    p2."EC_NB_P",
+    p2."EC_B_NB",
+    p2."EC_AC",
+    p2."ETC_PC",
+    p2."EC_NB_G_PC",
+    p2."EC_NB_T_PC",
+    p2."EC_NB_P_PC",
+    p2."EAC_PC",
+    p2."ETC_CE",
+    p2."EC_CE_PC",
+    p2."ETC_R_PA",
+    null::INT,
+    null::INT,
+    null::INT,
+    null::INT,
+    null::INT,
+    null::INT,
+    null::INT,
+    null::INT,
+    null::INT
+from tmp_parcoursup2018 p2 
+join formation f 
+on p2."Filiere_formation_tres_agregee" = f.nom;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- Création de la table admission
+
+
+
+
+-- Supprimer les données de la table afin de s'assurer qu'elle existe et qu'elle est vierge de données 
+
+
+
+
+-- Insérer les données cibles dans la table. 
+
+
+
+
+
+
+
+
 -- Fin de la transaction.
-COMMIT
+COMMIT;
