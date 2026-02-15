@@ -30,7 +30,7 @@ create view nombre_formation_par_region as
 -- Cette vue est à enrichir, mais elle n'est pour le moment pas encore élaborée à son maximum. 
 
 
-create view taux_filles_admises_par_disciplines as 
+create view taux_filles_acceptées_par_disciplines as 
 	select d.nom as discipline, AVG(a.pa_f) as taux_acceptation_candidates
 	from "ParcourStat".admissions a 
 	join "ParcourStat".formation f on a.formation_id = f.id 
