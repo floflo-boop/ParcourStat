@@ -14,15 +14,15 @@ SELECT
     CAST("Annee" as INT) as "Annee",
 	TRIM("Code_UAI") as "Code_UAI",
 	TRIM("Etablissement") as "Etablissement",
-	CASE
+	CASE -- Permet de normaliser avec efficacité les le code départemental de la Corse du Sud. Manquant ici.
         WHEN TRIM(INITCAP("Departement_etablissement")) = 'Corse-Du-Sud' THEN '2A'
         ELSE TRIM(CAST("Code_departemental_etablissement" as VARCHAR(100)))
     END AS "Code_departemental_etablissement",
-	CASE 
+	CASE -- Permet de noramliser avec efficacité la graphie de Corse-Du-Sud. 
 		WHEN TRIM(INITCAP("Departement_etablissement")) = 'Corse Du Sud' THEN 'Corse-Du-Sud'
 		ELSE TRIM(INITCAP("Departement_etablissement"))
 	END AS "Departement_etablissement",
-	CASE
+	CASE -- Normalisation des noms des régions.
         WHEN TRIM("Region_etablissement") = 'Auvergne-Rhône-Alpes' THEN 'Auvergne-Rhône-Alpes'
         WHEN TRIM("Region_etablissement") = 'Bourgogne-Franche-Comté' THEN 'Bourgogne-Franche-Comté'
         WHEN TRIM("Region_etablissement") = 'Bretagne' THEN 'Bretagne'
@@ -53,7 +53,7 @@ SELECT
 	TRIM("Lien_formation_Parcoursup") as "Lien_formation_parcoursup",
 	TRIM("Coordonnees_GPS_formation") as "Coordonnees_gps_formation",
 	CAST("Capacite_etablissement_formation" as INT) as "Capacite_etablissement_formation",
-	CAST("ET_C" as INT) as "ET_C",
+	CAST("ET_C" as INT) as "ET_C", -- Entre 2018 et 2024, le type n'est pas toujours au beau fixe entre 2018 et 2024 entre INT et FLOAT. Afin d'éviter toute incompatibilité, recourt à un CAST manuel en INT de toutes les données numériques.
 	CAST("ET_CF" as INT) as "ET_CF",
 	CAST("ET_CP" as INT) as "ET_CP",
 	CAST("ET_C_PP" as INT) as "ET_C_PP",
@@ -115,7 +115,7 @@ SELECT
 	CAST("PA_NB_SI_MB" as INT) as "PA_NB_SI_MB",
 	CAST("PA_NB_SM_B" as INT) as "PA_NB_SM_B",
 	CAST("PA_NB_AB" as INT) as "PA_NB_AB",
-	CAST("PA_NB_B_MB" as INT) as "PA_NB_B_MB", -- CHANGEMENT concerne les néo bacheliers avec mention bien. Rajout de MB pour mention bien.
+	CAST("PA_NB_B_MB" as INT) as "PA_NB_B_MB", 
 	CAST("PA_NB_TB" as INT) as "PA_NB_TB",
 	CAST("PA_NB_G" as INT) as "PA_NB_G",
 	CAST("PA_M" as INT) as "PA_M",
@@ -140,7 +140,7 @@ SELECT
 	TRIM("Statut_etablissement_filière_formation") as "Statut_etablissement_filière_formation",
 	TRIM("Code_UAI") as "Code_UAI",
 	CASE 
-		WHEN TRIM("Etablissement") = '3il' THEN '3IL'
+		WHEN TRIM("Etablissement") = '3il' THEN '3IL' 
 		ELSE TRIM(INITCAP("Etablissement"))	
 	END AS "Etablissement",
 	CASE 
@@ -149,13 +149,13 @@ SELECT
 		WHEN TRIM("Commune_etablissement") = 'Sarrola-Carcopino' THEN '2A'
         WHEN TRIM("Commune_etablissement") = 'Borgo' THEN '2B'
 		ELSE TRIM(CAST("Code_departemental_etablissement" as VARCHAR(100)))
-	END AS "Code_departemental_etablissement",
+	END AS "Code_departemental_etablissement", -- Disparition des codes départementaux de Corse au profit de "20" ou une cellule vide. Alignement forcé sur 2018 pour la cohérence des données.
 	CASE 
 		WHEN TRIM("Commune_etablissement") = 'Sarrola-Carcopino' THEN 'Corse-Du-Sud'
         WHEN TRIM("Commune_etablissement") = 'Borgo' THEN 'Haute-Corse'
 		WHEN TRIM(INITCAP("Departement_etablissement")) = 'Corse Du Sud' THEN 'Corse-Du-Sud'
 		ELSE TRIM(INITCAP("Departement_etablissement"))
-	END AS "Departement_etablissement",
+	END AS "Departement_etablissement", -- Les département de Corse ont disparus au profit de "Corse". Pour éviter une incompabilité et garder un maximum de granularité, nous avons normalisé cela.
     CASE
         WHEN TRIM("Region_etablissement") = 'Auvergne-Rhône-Alpes' THEN 'Auvergne-Rhône-Alpes'
         WHEN TRIM("Region_etablissement") = 'Bourgogne-Franche-Comté' THEN 'Bourgogne-Franche-Comté'
@@ -178,22 +178,22 @@ SELECT
 		WHEN TRIM("Academie_etablissement") = 'Etranger' THEN 'Etranger'
 		WHEN TRIM("Academie_etablissement") = 'Polynésie Française' THEN 'Polynésie Française'
         ELSE TRIM("Region_etablissement")
-    END as "Region_etablissement" ,
+    END as "Region_etablissement" , -- Permet de s'assurer que l'on a les même régions présent aux mêmes endroits dans nos deux jeux de données.
 	TRIM("Academie_etablissement") as "Academie_etablissement",
 	TRIM("Commune_etablissement") as "Commune_etablissement",
 	TRIM("Filiere_formation") as "Filiere_formation",
-	cast(case
+	cast(case -- Création d'un booléen au lieu d'un Varchar. 
 		when "Selectivite" = 'formation sélective' then true
 		else false
 	end as BOOLEAN) as "Selectivite",
 	TRIM("Filiere_formation_tres_agregee") as "Filiere_formation_tres_agregee",
 	TRIM("Filiere_formation detaillee") as "Filiere_formation_Detaillee",
-	TRIM("Filiere_formation_agregee") as "Filiere_formation_agregee", -- Changement : renommage de "Filiere_formation" dans le CSV d'origine en "Filiere_formation_agregee" en raison d'un doublon avec le précédent (juste avant le précédent case) et version agrégée de ce dernier.
+	TRIM("Filiere_formation_agregee") as "Filiere_formation_agregee", 
 	TRIM("Filiere_formation_detaillee_bis") as "Filiere_formation_detaillee_bis",
 	TRIM("Filiere_formation_détaillée") as "Filiere_formation_détaillée",
 	TRIM("Coordonnees_GPS_formation") as "Coordonnees_gps_formation",
 	CAST("Capacite_etablissement_formation" as INT) as "Capacite_etablissement_formation",
-	CAST("ET_C" as INT) as "ET_C",
+	CAST("ET_C" as INT) as "ET_C", -- Entre 2018 et 2024, le type n'est pas toujours au beau fixe entre 2018 et 2024 entre INT et FLOAT. Afin d'éviter toute incompatibilité, recourt à un CAST manuel en INT de toutes les données numériques.
 	CAST("ET_CF" as INT) as "ET_CF",
 	CAST("ET_C_PP" as INT) as "ET_C_PP",
 	CAST("EC_I" as INT) as "EC_I",
@@ -260,7 +260,7 @@ SELECT
 	CAST("PA_NB_SI_MB" as INT) as "PA_NB_SI_MB",
 	CAST("PA_NB_SM" as INT) as "PA_NB_SM",
 	CAST("PA_NB_AB" as INT) as "PA_NB_AB",
-	CAST("PA_NB_B_MB" as INT) as "PA_NB_B_MB", -- Changement : cette colonne concerne les néo bacheliers boursiers avec mention bien. Rajout de 'MB' pour mention bien.
+	CAST("PA_NB_B_MB" as INT) as "PA_NB_B_MB", 
 	CAST("PA_NB_TB" as INT) as "PA_NB_TB",
 	CAST("PA_NB_TB_F" as INT) as "PA_NB_TB_F",
 	CAST("PA_NB_G" as INT) as "PA_NB_G",

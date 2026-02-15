@@ -240,7 +240,7 @@ CREATE TABLE formation (
   Coordonnees_GPS_formation TEXT,
   identifiant_parcoursup TEXT,
 
-  CONSTRAINT formation_unique_nom_etab
+  CONSTRAINT formation_unique_nom_etab -- contrainte qui permet d'éviter d'avoir deux fois la même formation dans le même établissement. Evite la création par inadvertence d'une relation "many to many"
   UNIQUE (nom, etablissement_id)
 );
 
@@ -262,12 +262,12 @@ insert into formation (
 select
     nom,
     etablissement_id,
-    max(type_formation_id) as type_formation_id,
+    max(type_formation_id) as type_formation_id, --max permet de prendre une valeur unique et d'éviter des doublons.
     max(discipline_id) as discipline_id,
-    bool_or(selectivite) as selectivite,
+    bool_or(selectivite) as selectivite, -- permet d'éviter les incohérences entre 2018 et 2024 en partant du principe que si le booléen existe dans l'un des deux années, alors il s'applique aux deux années. Evite les doublons et le "many to many"
     max(coordonnees_gps_formation) as coordonnees_gps_formation,
     max(identifiant_parcoursup) as identifiant_parcoursup
-from (
+from ( -- Création d'une sous requête pour mieux gérer les valeurs NULL, les agrégations de données et les doublons. Sans cela, nous avions un nombre considérable de doublons (environ 2 millions).
     select
         tm."Filiere_formation_Detaillee" as nom,
         e.id as etablissement_id,
@@ -277,7 +277,7 @@ from (
         tm."Coordonnees_gps_formation" as coordonnees_gps_formation,
         tm."Lien_formation_parcoursup" as identifiant_parcoursup
     from tmp_parcoursup2024 tm
-    join etablissement e on tm."Code_UAI" = e.id  -- ← Changement ici
+    join etablissement e on tm."Code_UAI" = e.id  
     join types_formations tf on tm."Filiere_formation_tres_agregee" = tf.nom
     join discipline d on tm."Filiere_formation" = d.nom
 
@@ -292,11 +292,11 @@ from (
         tm."Coordonnees_gps_formation" as coordonnees_gps_formation,
         tm."Lien_formation_parcoursup" as identifiant_parcoursup
     from tmp_parcoursup2018 tm
-    join etablissement e on tm."Code_UAI" = e.id  -- ← Changement ici
+    join etablissement e on tm."Code_UAI" = e.id  
     join types_formations tf on tm."Filiere_formation_tres_agregee" = tf.nom
     join discipline d on tm."Filiere_formation" = d.nom
 ) t
-group by nom, etablissement_id;
+group by nom, etablissement_id; -- on s'assure de garder intact la condition "CONSTRAINT" précédemment appliquée. On évite les doublons inutiles en gardant cette logique de une entité = une formation ET un établissement.
 
 
 
@@ -339,7 +339,7 @@ CREATE TABLE candidatures (
     EC_TP_PA_E INT,
     EC_B_TP_PA_E INT,
     EAC_PA_E INT,
-    CONSTRAINT candidatures_unique
+    CONSTRAINT candidatures_unique -- même logique que précédemment. On empêche les "many to many" par inadvertence.
         UNIQUE (formation_id, annee)
 );
 
@@ -386,7 +386,7 @@ insert into candidatures(
 select
     formation_id,
     annee,
-    MAX(ET_C) as ET_C,
+    MAX(ET_C) as ET_C, -- même logique que précédemment. Agrégation afin d'éviter les doublons. 
     MAX(ET_CF) as ET_CF,
     MAX(ET_C_PP) as ET_C_PP,
     MAX(EC_I) as EC_I,
@@ -414,7 +414,7 @@ select
     MAX(EC_TP_PA_E) as EC_TP_PA_E,
     MAX(EC_B_TP_PA_E) as EC_B_TP_PA_E,
     MAX(EAC_PA_E) as EAC_PA_E
-from (
+from ( -- Création d'une sous requête pour mieux gérer les valeurs NULL, les agrégations de données et les doublons. Sans cela, nous avions un nombre considérable de doublons (environ 2 millions).
     select
         f.id as formation_id,
         p."Annee" as annee,
@@ -448,7 +448,7 @@ from (
         p."EAC_PA_E" as EAC_PA_E
     from tmp_parcoursup2024 p
     join etablissement e on p."Code_UAI" = e.id
-    join formation f on f.nom = p."Filiere_formation_Detaillee"
+    join formation f on f.nom = p."Filiere_formation_Detaillee" --jointure des candidatures avec chaque formation correspondante.
        and f.etablissement_id = e.id
 
     union all
@@ -475,7 +475,7 @@ from (
         p2."ETC_CE" as ETC_CE,
         p2."EC_CE_PC" as EC_CE_PC,
         p2."ETC_R_PA" as ETC_R_PA,
-        null::INT as ETC_A_PE,
+        null::INT as ETC_A_PE, -- On force la validation du null en valeur INT. Comme en 2018 nous n'avons pas ces colonnes, mais qu'elles ont un réelle intérêt pour nous en 2024, nous forçon SQL à accepter le NULL comme valeur. Seul moyen pour éviter la suppression pure des colonnes. 
         null::INT as ETC_F_A_PE,
         null::INT as EC_TG_PA_E,
         null::INT as EC_B_TG_PA_E,
@@ -485,11 +485,11 @@ from (
         null::INT as EC_B_TP_PA_E,
         null::INT as EAC_PA_E
     from tmp_parcoursup2018 p2
-    join etablissement e on p2."Code_UAI" = e.id
-    join formation f on f.nom = p2."Filiere_formation_detaillee"
+    join etablissement e on p2."Code_UAI" = e.id -- Lier les bonnes candidatures aux bons établissements.
+    join formation f on f.nom = p2."Filiere_formation_detaillee" -- Lier les bonnes formations aux bons établissements. 
        and f.etablissement_id = e.id
 ) t
-group by formation_id, annee;
+group by formation_id, annee; -- graĉe à cela, une ligne = une formation pour une année. 
 
 
 
@@ -540,8 +540,8 @@ CREATE TABLE admissions (
     PA_M_BT INT, 
     PA_NB_P INT, 
     PA_M_BP INT,
-    CONSTRAINT admissions_unique
-        UNIQUE (formation_id, annee)
+    CONSTRAINT admissions_unique -- on répète la contrainte permettant d'éviter le many to many.
+        UNIQUE (formation_id, annee) -- une entité = une formation associée à une année.
 );
 
 
@@ -550,8 +550,6 @@ CREATE TABLE admissions (
 
 
 truncate table admissions;
-
--- Insérer les données cibles dans la table. 
 
 -- Insérer les données cibles dans la table admissions
 
@@ -603,7 +601,7 @@ insert into admissions(
 select
     formation_id,
     annee,
-    MAX(EA_PC) as EA_PC,
+    MAX(EA_PC) as EA_PC, -- Même utilisation de cette fonction d'agrégation. 
     MAX(EA_I) as EA_I,
     MAX(EA_BN_B) as EA_BN_B,
     MAX(EA_NB) as EA_NB,
@@ -644,7 +642,7 @@ select
     MAX(PA_M_BT) as PA_M_BT,
     MAX(PA_NB_P) as PA_NB_P,
     MAX(PA_M_BP) as PA_M_BP
-from (
+from ( -- Création d'une sous requête pour mieux gérer les valeurs NULL, les agrégations de données et les doublons. Sans cela, nous avions un nombre considérable de doublons (environ 2 millions).
     select
         f.id as formation_id,
         p."Annee" as annee,
@@ -690,11 +688,11 @@ from (
         p."PA_NB_P" as PA_NB_P,
         p."PA_M_BP" as PA_M_BP
     from tmp_parcoursup2024 p
-    join etablissement e on p."Code_UAI" = e.id
-    join formation f on f.nom = p."Filiere_formation_Detaillee"
+    join etablissement e on p."Code_UAI" = e.id -- on lie les bons établissements
+    join formation f on f.nom = p."Filiere_formation_Detaillee" -- on lie les bonnes admissions avec les bonnes formations.
        and f.etablissement_id = e.id
 
-    union all
+    union all 
 
     select
         f.id as formation_id,
@@ -712,7 +710,7 @@ from (
         p2."EA_NB_AB" as EA_NB_AB,
         p2."EA_NB_B" as EA_NB_B,
         p2."EA_NB_TB" as EA_NB_TB,
-        null::int as EA_NB_TBF,
+        null::int as EA_NB_TBF, -- la valeure null ne peut pas être acceptée pour du INT. Cependant, cette colonne n'existe pas en 2018. Nous forcçons donc le null afin d'éviter la suppression de colonne et de données pure et dure.
         p2."EA_NB_G_M" as EA_NB_G_M,
         p2."EA_NB_T_M" as EA_NB_T_M,
         p2."EA_NB_P_M" as EA_NB_P_M,
@@ -741,11 +739,11 @@ from (
         p2."PA_NB_P" as PA_NB_P,
         p2."PA_M_BP" as PA_M_BP
     from tmp_parcoursup2018 p2
-    join etablissement e on p2."Code_UAI" = e.id
-    join formation f on f.nom = p2."Filiere_formation_detaillee"
+    join etablissement e on p2."Code_UAI" = e.id -- faire les bons liens avec les bon établissements;
+    join formation f on f.nom = p2."Filiere_formation_detaillee" -- faire les bons liens avec les bonnes formations.
        and f.etablissement_id = e.id
 ) t
-group by formation_id, annee;
+group by formation_id, annee; -- on garde intacte l'entité créer dans CREATE afin d'éviter les doublons.
 
 
 
