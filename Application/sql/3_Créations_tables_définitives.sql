@@ -5,6 +5,7 @@ BEGIN;
 -- Toujours utiliser le même schéma
 SET search_path TO "ParcourStat";
 
+
 -- Création de la table region avec une auto incrémentation de la clé primaire
 
 create table region(

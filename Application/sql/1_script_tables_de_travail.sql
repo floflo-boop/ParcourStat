@@ -7,8 +7,6 @@ CREATE SCHEMA IF NOT EXISTS "ParcourStat";
 -- Toujours utiliser le même schéma
 SET search_path TO "ParcourStat";
 
-
-
 -- Création de la table temporaire parcoursup2018 et transformation des données : suppression des espaces et normalisation
 
 CREATE TABLE TMP_parcoursup2018 AS (

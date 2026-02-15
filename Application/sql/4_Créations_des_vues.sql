@@ -2,14 +2,15 @@
 BEGIN;
 
 -- Toujours utiliser le même schéma
+CREATE SCHEMA IF NOT EXISTS "ParcourStat";
 SET search_path TO "ParcourStat";
 
 
 -- Création d'une vue permettant de montrer le nombre de formation par région. 
--- Cela permet de créer une première connaissance : la répartition inégale de l'accès à la formation supérieur du à la concentration des formations en île de France et à la rareté de ces formations notamment dans les Territoires d'Outre Mer et les lieux d'expatriation.
--- Nous pourrions utiliser un jeu de donnée sur le taux de ruralités dans les régions afin de faire ressortir la répartitions des formations en fonction de l'urbanisation. 
--- Cela créer une nouvelle information : la répartition inégale de l'accès à l'enseignement supérieur en fonction d'un critère de ruralité. 
--- Mais peu révélateur quant à l'inégalité de la repartition des formations d'enseignements supérieur sur le territoire français en fonction de l'éloignement avec la capitale française.
+-- Cela permet de créer une première connaissance : la répartition inégale de l'accès à la formation supérieure dû à la concentration des formations en île de France et à la rareté de ces formations notamment dans les Territoires d'Outre Mer et les lieux d'expatriation.
+-- Nous pourrions utiliser un jeu de données sur le taux de ruralités dans les régions afin de faire ressortir la répartition des formations en fonction de l'urbanisation. 
+-- Cela crée une nouvelle information : la répartition inégale de l'accès à l'enseignement supérieur en fonction d'un critère de ruralité. 
+-- Mais peu révélateur quant à l'inégalité de la repartition des formations d'enseignement supérieur sur le territoire français en fonction de l'éloignement avec la capitale française.
 
 create view nombre_formation_par_region as  
 	select r.nom as region, count(f.id ) as nbr_formation 
@@ -23,11 +24,10 @@ create view nombre_formation_par_region as
 
 
 
-
 -- Création d'une vue permettant de montrer le taux d'acceptation des filles dans les disciplines en combinant 2018 et 2024. 
--- Le chiffre est calculé en fonction du rapport candidates/admises. Donc 25 par exemple voudrais que seulement 25 des candidates ont été acceptées.
+-- Le chiffre est calculé en fonction du rapport candidates/admises. Donc 25 par exemple voudrait que seulement 25 des candidates aient été acceptées.
 -- Cela permet de créer une première connaissance sur la parité dans les formations. 
--- Cette vue est à enrichir, mais elle n'est pour le moment pas encore élaborée à son maximum. 
+-- Cette vue est à enrichir, elle n'est pour le moment pas encore élaborée à son maximum. 
 
 
 create view taux_filles_admises_par_disciplines as 
@@ -38,6 +38,25 @@ create view taux_filles_admises_par_disciplines as
 	GROUP BY discipline 
 	order by taux_acceptation_candidates DESC;
 
--- Fin de transction
+
+-- Création d'une vue permettant de montrer le nombre moyen de boursiers admis par région.
+-- Elle permet d'identifier les régions qui accueillent le plus de boursiers et celles qui en accueillent le moins.
+-- Cela crée de la connaissance autour du taux d'accessibilité sociale de chaque région.
+-- Toutefois, elle reste limitée puisqu'elle ne prend pas en compte le nombre de formations par régions, croisée avec le nombre de boursiers. Une région qui accueille un grand nombre de boursiers ne possède donc pas forcément une grande accessibilité sociale, mais peut avoir un grand nombre de formations.
+
+
+create or replace view boursiers_admis_regions as
+select
+   region.nom AS region,
+   AVG(admissions.PA_NB_B) AS boursiers_admis
+from admissions
+join formation ON admissions.formation_id = formation.id
+join etablissement ON formation.etablissement_id = etablissement.id
+join commune ON etablissement.commune_id = commune.id
+join departement ON commune.departement_id = departement.code
+join region ON departement.region_id = region.id
+group by region.nom;
+
+-- Fin de transaction
 
 COMMIT; 
