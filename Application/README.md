@@ -153,8 +153,8 @@ CREATE DATABASE ParcourStat;
 - Créer le schéma au sein de la base de données :
 CREATE SCHEMA ParcourStat;
 
-- télécharger les requirements.txt dans un environnement virtuel
-- lancer la commande 'python run.py' pour exécuter l'installation
+- Télécharger les requirements.txt dans un environnement virtuel
+- Lancer la commande 'python run.py' pour exécuter l'installation
 
 ## Auteurs 
 - Florian Martin
