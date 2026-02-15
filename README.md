@@ -149,9 +149,9 @@ Ce dépôt Github contient :
 ## Installation de la base de données 
 Pour installer notre base de données, il faut :
 - Créer la base de données : 
-CREATE DATABASE ParcourStat;
+CREATE DATABASE "ParcourStat";
 - Créer le schéma au sein de la base de données :
-CREATE SCHEMA ParcourStat;
+CREATE SCHEMA "ParcourStat";
 
 - Télécharger les requirements.txt dans un environnement virtuel
 - Lancer la commande 'python run.py' pour exécuter l'installation
