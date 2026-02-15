@@ -276,7 +276,7 @@ from ( -- Création d'une sous requête pour mieux gérer les valeurs NULL, les 
         tm."Coordonnees_gps_formation" as coordonnees_gps_formation,
         tm."Lien_formation_parcoursup" as identifiant_parcoursup
     from tmp_parcoursup2024 tm
-    join etablissement e on tm."Code_UAI" = e.id  -- ← Changement ici
+    join etablissement e on tm."Code_UAI" = e.id  
     join types_formations tf on tm."Filiere_formation_tres_agregee" = tf.nom
     join discipline d on tm."Filiere_formation" = d.nom
 
@@ -291,7 +291,7 @@ from ( -- Création d'une sous requête pour mieux gérer les valeurs NULL, les 
         tm."Coordonnees_gps_formation" as coordonnees_gps_formation,
         tm."Lien_formation_parcoursup" as identifiant_parcoursup
     from tmp_parcoursup2018 tm
-    join etablissement e on tm."Code_UAI" = e.id  -- ← Changement ici
+    join etablissement e on tm."Code_UAI" = e.id  
     join types_formations tf on tm."Filiere_formation_tres_agregee" = tf.nom
     join discipline d on tm."Filiere_formation" = d.nom
 ) t
