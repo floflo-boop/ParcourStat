@@ -32,9 +32,9 @@ create view nombre_formation_par_region as
 
 create view taux_filles_acceptées_par_disciplines as 
 	select d.nom as discipline, AVG(a.pa_f) as taux_acceptation_candidates
-	from "ParcourStat".admissions a 
-	join "ParcourStat".formation f on a.formation_id = f.id 
-	join "ParcourStat".discipline d on f.discipline_id = d.id 
+	from admissions a 
+	join formation f on a.formation_id = f.id 
+	join discipline d on f.discipline_id = d.id 
 	GROUP BY discipline 
 	order by taux_acceptation_candidates DESC;
 
@@ -45,7 +45,7 @@ create view taux_filles_acceptées_par_disciplines as
 -- Toutefois, elle reste limitée puisqu'elle ne prend pas en compte le nombre de formations par régions, croisée avec le nombre de boursiers. Une région qui accueille un grand nombre de boursiers ne possède donc pas forcément une grande accessibilité sociale, mais peut avoir un grand nombre de formations.
 
 
-create or replace view boursiers_admis_regions as
+create view boursiers_admis_regions as
 select
    region.nom AS region,
    AVG(admissions.PA_NB_B) AS boursiers_admis
