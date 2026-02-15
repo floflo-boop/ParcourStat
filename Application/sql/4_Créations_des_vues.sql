@@ -36,7 +36,7 @@ create view taux_filles_admises_par_disciplines as
 	join "ParcourStat".formation f on a.formation_id = f.id 
 	join "ParcourStat".discipline d on f.discipline_id = d.id 
 	GROUP BY discipline 
-	order by taux_acceptation_candidates;
+	order by taux_acceptation_candidates DESC;
 
 -- Fin de transction
 
