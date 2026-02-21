@@ -1,0 +1,15 @@
+--  Suppression des tables de travail sur la population
+
+
+
+DROP TABLE resultat_pivot_2018;
+DROP TABLE resultat_pivot_2024;
+
+
+DROP TABLE TMP_resultat_pivot_2018;
+DROP TABLE TMP_resultat_pivot_2024;
+
+
+COMMIT;
+
+
