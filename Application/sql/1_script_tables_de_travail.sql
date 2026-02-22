@@ -299,4 +299,192 @@ FROM
 
 
 
+
+-- Création de la table temporaire pour la population par région en 2024 (1er enrichissements)
+
+CREATE TABLE TMP_resultat_pivot_2024 AS (
+SELECT
+    TRIM(CAST("dep" AS VARCHAR(3))) AS "dep",
+    TRIM("sexe") AS "sexe",
+    CAST(2024 AS  VARCHAR(4)) AS "annee",  -- Valeur essentielle mais non existante à l'origine. Ont ajoute la colonne avec une valeur fixe "2024".
+    CAST("0 à 4 ans" AS INT) AS "age_0_4",
+    CAST("5 à 9 ans" AS INT) AS "age_5_9",
+    CAST("10 à 14 ans" AS INT) AS "age_10_14",
+    CAST("15 à 19 ans" AS INT) AS "age_15_19",
+    CAST("20 à 24 ans" AS INT) AS "age_20_24",
+    CAST("25 à 29 ans" AS INT) AS "age_25_29",
+    CAST("30 à 34 ans" AS INT) AS "age_30_34",
+    CAST("35 à 39 ans" AS INT) AS "age_35_39",
+    CAST("40 à 44 ans" AS INT) AS "age_40_44",
+    CAST("45 à 49 ans" AS INT) AS "age_45_49",
+    CAST("50 à 54 ans" AS INT) AS "age_50_54",
+    CAST("55 à 59 ans" AS INT) AS "age_55_59",
+    CAST("60 à 64 ans" AS INT) AS "age_60_64",
+    CAST("65 à 69 ans" AS INT) AS "age_65_69",
+    CAST("70 à 74 ans" AS INT) AS "age_70_74",
+    CAST("75 à 79 ans" AS INT) AS "age_75_79",
+    CAST("80 ans et plus" AS INT) AS "age_80_plus"
+FROM
+    resultat_pivot_2024
+);
+
+
+-- Creation de table temporaire pour la population par région en 2018 (1er enrichissements)
+
+CREATE TABLE TMP_resultat_pivot_2018 AS (
+SELECT
+    TRIM(CAST("dep" AS VARCHAR(3))) AS "dep",
+    TRIM("sexe") AS "sexe",
+    CAST(2018 AS VARCHAR(4)) AS "annee",  -- Valeur essentielle mais non existante à l'origine. Ont ajoute la colonne avec une valeur fixe "2018".
+    CAST("0 à 4 ans" AS INT) AS "age_0_4",
+    CAST("5 à 9 ans" AS INT) AS "age_5_9",
+    CAST("10 à 14 ans" AS INT) AS "age_10_14",
+    CAST("15 à 19 ans" AS INT) AS "age_15_19",
+    CAST("20 à 24 ans" AS INT) AS "age_20_24",
+    CAST("25 à 29 ans" AS INT) AS "age_25_29",
+    CAST("30 à 34 ans" AS INT) AS "age_30_34",
+    CAST("35 à 39 ans" AS INT) AS "age_35_39",
+    CAST("40 à 44 ans" AS INT) AS "age_40_44",
+    CAST("45 à 49 ans" AS INT) AS "age_45_49",
+    CAST("50 à 54 ans" AS INT) AS "age_50_54",
+    CAST("55 à 59 ans" AS INT) AS "age_55_59",
+    CAST("60 à 64 ans" AS INT) AS "age_60_64",
+    CAST("65 à 69 ans" AS INT) AS "age_65_69",
+    CAST("70 à 74 ans" AS INT) AS "age_70_74",
+    CAST("75 à 79 ans" AS INT) AS "age_75_79",
+    CAST("80 ans et plus" AS INT) AS "age_80_plus"
+FROM
+    resultat_pivot_2018
+);
+
+
+
+--création d'une table temporaire à partir du csv sur le revenu fiscal de reference (2ème enrichissement)
+
+
+CREATE TABLE TMP_revenu_fiscal_reference AS
+SELECT
+    CASE --case pour normaliser les codes départements et qu'ils soient les mêmes que dans la table département à venir.
+    WHEN TRIM(CAST("Dép." AS VARCHAR)) IN ('971', '972', '973', '974', '976') 
+        THEN TRIM(CAST("Dép." AS VARCHAR))
+    -- Corse
+    WHEN TRIM(CAST("Dép." AS VARCHAR)) = '2A0' THEN '2A'
+    WHEN TRIM(CAST("Dép." AS VARCHAR)) = '2B0' THEN '2B'
+    -- Paris arrondissements → 75
+    WHEN TRIM(CAST("Dép." AS VARCHAR)) IN ('754', '755', '756', '757', '758') THEN '75'
+    -- Petite couronne arrondissements
+    WHEN TRIM(CAST("Dép." AS VARCHAR)) IN ('921', '922') THEN '92'
+    WHEN TRIM(CAST("Dép." AS VARCHAR)) = '930' THEN '93'
+    WHEN TRIM(CAST("Dép." AS VARCHAR)) = '940' THEN '94'
+    WHEN TRIM(CAST("Dép." AS VARCHAR)) = '950' THEN '95'
+    -- Bouches-du-Rhône et Nord
+	WHEN TRIM(CAST("Dép." AS VARCHAR)) IN ('131', '132') THEN '13'
+	WHEN TRIM(CAST("Dép." AS VARCHAR)) IN ('591', '592') THEN '59'
+    -- Non-résidents : exclusion
+    WHEN TRIM(CAST("Dép." AS VARCHAR)) = 'B31' THEN NULL
+    -- Cas général : suppression du zéro final
+    WHEN RIGHT(TRIM(CAST("Dép." AS VARCHAR)), 1) = '0'
+        THEN LEFT(TRIM(CAST("Dép." AS VARCHAR)), LENGTH(TRIM(CAST("Dép." AS VARCHAR))) - 1)
+    ELSE TRIM(CAST("Dép." AS VARCHAR))
+END AS "Code_departement",
+    TRIM(CAST("Revenu fiscal de référence par tranche (en euros)" AS VARCHAR)) AS "Tranche_revenus",
+    SUM(
+        CAST(NULLIF(TRIM(CAST("Nombre de foyers fiscaux" AS VARCHAR)), 'n.c.') AS INT)
+    )                                                                      AS "Nombre_foyers_fiscaux",
+    SUM(
+        CAST(NULLIF(TRIM(CAST("Revenu fiscal de référence des foyers fiscaux" AS VARCHAR)), 'n.c.') AS BIGINT)
+    )                                                                      AS "Revenu_fiscal_reference_milliers",
+    SUM(
+        CAST(NULLIF(TRIM(CAST("Nombre de foyers fiscaux imposés" AS VARCHAR)), 'n.c.') AS INT)
+    )                                                                      AS "Nombre_foyers_imposes",
+    SUM(
+        CAST(NULLIF(TRIM(CAST("Revenu fiscal de référence des foyers fiscaux imposés" AS VARCHAR)), 'n.c.') AS BIGINT)
+    )                                                                      AS "Revenu_fiscal_reference_imposes_milliers"
+FROM revenu_fiscal_reference
+
+WHERE TRIM(CAST("Commune" AS VARCHAR)) NOT IN ('', ' ')
+  AND TRIM(CAST("Commune" AS VARCHAR)) IS NOT NULL
+  AND TRIM(CAST("Dép." AS VARCHAR)) != 'B31'  -- ← exclure les non-résidents
+GROUP BY
+    CASE
+        WHEN TRIM(CAST("Dép." AS VARCHAR)) IN ('971', '972', '973', '974', '976') 
+            THEN TRIM(CAST("Dép." AS VARCHAR))
+        WHEN TRIM(CAST("Dép." AS VARCHAR)) = '2A0' THEN '2A'
+        WHEN TRIM(CAST("Dép." AS VARCHAR)) = '2B0' THEN '2B'
+        WHEN TRIM(CAST("Dép." AS VARCHAR)) IN ('754', '755', '756', '757', '758') THEN '75'
+        WHEN TRIM(CAST("Dép." AS VARCHAR)) IN ('921', '922') THEN '92'
+        WHEN TRIM(CAST("Dép." AS VARCHAR)) = '930' THEN '93'
+        WHEN TRIM(CAST("Dép." AS VARCHAR)) = '940' THEN '94'  -- ← corrigé
+        WHEN TRIM(CAST("Dép." AS VARCHAR)) = '950' THEN '95'
+        WHEN TRIM(CAST("Dép." AS VARCHAR)) IN ('131', '132') THEN '13'
+		WHEN TRIM(CAST("Dép." AS VARCHAR)) IN ('591', '592') THEN '59'
+        WHEN TRIM(CAST("Dép." AS VARCHAR)) = 'B31' THEN NULL
+        WHEN RIGHT(TRIM(CAST("Dép." AS VARCHAR)), 1) = '0'
+            THEN LEFT(TRIM(CAST("Dép." AS VARCHAR)), LENGTH(TRIM(CAST("Dép." AS VARCHAR))) - 1)
+        ELSE TRIM(CAST("Dép." AS VARCHAR))
+    END,
+    TRIM(CAST("Revenu fiscal de référence par tranche (en euros)" AS VARCHAR))
+ORDER BY
+    "Code_departement",
+    "Tranche_revenus";
+
+
+-- Création de la table temporaire sur les IPS des lycée (3ème enrichissements)
+
+CREATE TABLE TMP_IPS_Lycee_College AS (
+SELECT
+TRIM("Rentrée scolaire") as "Session",
+CAST("Code région" as INT) as "Région_id",
+TRIM(INITCAP("Région académique")) as "région",
+CAST("Code académie" as INT) as "Académie_id",
+TRIM(INITCAP("Académie")) as "Académie",
+TRIM("Code du département") as "Département_id",
+TRIM(INITCAP("Département")) as "Département",
+TRIM(INITCAP("Nom de la commune")) as "Commune_nom",
+TRIM("UAI") as "Code_UAI",
+TRIM(INITCAP("Nom de l'établissement")) as "Etablissement_nom",
+case
+	when("Secteur") = 'public' then 'Public'
+	when("Secteur") = 'privé sous contrat' then 'Privé sous contrat d''association'
+end as "Statut",
+TRIM("Type de lycée") as "Type_lycée",  
+CASE WHEN CAST("IPS voie GT" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS voie GT" AS FLOAT) ELSE NULL END as "IPS_LEGT", -- Utilisation d'une regex qui permet de forcer du "null" dans les colonnes float. Permet de remplacer les vides de notre csv sans entrer de données erronnées.
+CASE WHEN CAST("IPS voie PRO" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS voie PRO" AS FLOAT) ELSE NULL END as "IPS_PRO",
+CASE WHEN CAST("IPS post BAC" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS post BAC" AS FLOAT) ELSE NULL END as "IPS_Post_BAC",
+CASE WHEN CAST("IPS de l'établissement" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS de l'établissement" AS FLOAT) ELSE NULL END as "IPS_Etablissement",
+CASE WHEN CAST("Ecart type voie GT" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("Ecart type voie GT" AS FLOAT) ELSE NULL END as "Ecart_Type_GT",
+CASE WHEN CAST("Ecart type voie PRO" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("Ecart type voie PRO" AS FLOAT) ELSE NULL END as "Ecart_Type_PRO",
+CASE WHEN CAST("Ecart-type établissement" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("Ecart-type établissement" AS FLOAT) ELSE NULL END as "Ecart_Type_Etablissement",
+CASE WHEN CAST("IPS national LEGT" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS national LEGT" AS FLOAT) ELSE NULL END as "IPS_National",
+CASE WHEN CAST("IPS national LPO" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS national LPO" AS FLOAT) ELSE NULL END as "IPS_National_LGPO",
+CASE WHEN CAST("IPS national LP" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS national LP" AS FLOAT) ELSE NULL END as "IPS_National_LP",
+CASE WHEN CAST("IPS national LEGT privé" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS national LEGT privé" AS FLOAT) ELSE NULL END as "IPS_National_LEGT_Prive",
+CASE WHEN CAST("IPS national LEGT public" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS national LEGT public" AS FLOAT) ELSE NULL END as "IPS_National_LEGT_Public",
+CASE WHEN CAST("IPS national LPO privé" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS national LPO privé" AS FLOAT) ELSE NULL END as "IPS_National_LPO_Prive",
+CASE WHEN CAST("IPS national LPO public" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS national LPO public" AS FLOAT) ELSE NULL END as "IPS_National_LPO_Public",
+CASE WHEN CAST("IPS national LP privé" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS national LP privé" AS FLOAT) ELSE NULL END as "IPS_National_LP_Prive",
+CASE WHEN CAST("IPS national LP public" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS national LP public" AS FLOAT) ELSE NULL END as "IPS_National_LP_Public",
+CASE WHEN CAST("IPS académique LEGT" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS académique LEGT" AS FLOAT) ELSE NULL END as "IPS_Academique_LEGT",
+CASE WHEN CAST("IPS académique LPO" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS académique LPO" AS FLOAT) ELSE NULL END as "IPS_Academique_LPO",
+CASE WHEN CAST("IPS académique LP" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS académique LP" AS FLOAT) ELSE NULL END as "IPS_Academique_LP",
+CASE WHEN CAST("IPS académique LEGT privé" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS académique LEGT privé" AS FLOAT) ELSE NULL END as "IPS_Academique_LEGT_Prive",
+CASE WHEN CAST("IPS académique LEGT public" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS académique LEGT public" AS FLOAT) ELSE NULL END as "IPS_Academique_LEGT_Public",
+CASE WHEN CAST("IPS académique LPO privé" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS académique LPO privé" AS FLOAT) ELSE NULL END as "IPS_Academique_LPO_Prive",
+CASE WHEN CAST("IPS académique LPO public" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS académique LPO public" AS FLOAT) ELSE NULL END as "IPS_Academique_LPO_Public",
+CASE WHEN CAST("IPS académique LP privé" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS académique LP privé" AS FLOAT) ELSE NULL END as "IPS_Academique_LP_Prive",
+CASE WHEN CAST("IPS académique LP public" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS académique LP public" AS FLOAT) ELSE NULL END as "IPS_Academique_LP_Public",
+CASE WHEN CAST("IPS départemental LEGT" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS départemental LEGT" AS FLOAT) ELSE NULL END as "IPS_Departemental_LEGT",
+CASE WHEN CAST("IPS départemental LPO" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS départemental LPO" AS FLOAT) ELSE NULL END as "IPS_Departemental_LPO",
+CASE WHEN CAST("IPS départemental LP" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS départemental LP" AS FLOAT) ELSE NULL END as "IPS_Départemental_LP",
+CASE WHEN CAST("IPS départemental LEGT privé" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS départemental LEGT privé" AS FLOAT) ELSE NULL END as "IPS_Departemental_LEGT_Prive",
+CASE WHEN CAST("IPS départemental LEGT public" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS départemental LEGT public" AS FLOAT) ELSE NULL END as "IPS_Departemental_LEGT_Public",
+CASE WHEN CAST("IPS départemental LPO privé" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS départemental LPO privé" AS FLOAT) ELSE NULL END as "IPS_Departemental_LPO_Prive",
+CASE WHEN CAST("IPS départemental LPO public" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS départemental LPO public" AS FLOAT) ELSE NULL END as "IPS_Departemental_LPO_Public",
+CASE WHEN CAST("IPS départemental LP privé" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS départemental LP privé" AS FLOAT) ELSE NULL END as "IPS_Departemental_LP_Prive",
+CASE WHEN CAST("IPS départemental LP public" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("IPS départemental LP public" AS FLOAT) ELSE NULL END as "IPS_Departemental_LP_Public",
+CASE WHEN CAST("num_ligne" AS TEXT) ~ '^-?[0-9]+(\.[0-9]+)?$' THEN CAST("num_ligne" AS FLOAT) ELSE NULL END as "Num_Ligne"
+FROM 
+    lycee
+);
+
 COMMIT;

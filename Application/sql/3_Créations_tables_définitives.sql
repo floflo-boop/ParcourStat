@@ -747,5 +747,296 @@ group by formation_id, annee; -- on garde intacte l'entité créer dans CREATE a
 
 
 
+-- Intégration dans notre base de données de notre premier enrichissements dans sa forme définitive.
+
+-- Création et remplissage simultannée de la table Population.
+
+CREATE TABLE population AS (
+    SELECT LTRIM("dep", '0') AS "dep", "sexe", "annee",
+           "age_0_4", "age_5_9", "age_10_14", "age_15_19", "age_20_24", "age_25_29", "age_30_34",
+           "age_35_39", "age_40_44", "age_45_49", "age_50_54", "age_55_59", "age_60_64",
+           "age_65_69", "age_70_74", "age_75_79", "age_80_plus"
+    FROM TMP_resultat_pivot_2018
+    UNION ALL
+    SELECT LTRIM("dep", '0') AS "dep", "sexe", "annee",
+           "age_0_4", "age_5_9", "age_10_14", "age_15_19", "age_20_24", "age_25_29", "age_30_34",
+           "age_35_39", "age_40_44", "age_45_49", "age_50_54", "age_55_59", "age_60_64",
+           "age_65_69", "age_70_74", "age_75_79", "age_80_plus"
+    FROM TMP_resultat_pivot_2024
+);
+
+ALTER TABLE population
+    ADD CONSTRAINT fk_population_departement
+    FOREIGN KEY ("dep") REFERENCES departement("code");
+
+
+
+-- Intégration dans notre base de donnée de notre deuxième enrichissements dans sa forme définitive.
+
+
+-- Creation de la table définitive revenu_fiscal_reference.
+
+
+CREATE TABLE revenu_fiscal_reference_def(
+    code_departement VARCHAR(100) REFERENCES "ParcourStat".departement(code),
+    tranche_revenus VARCHAR(100),
+    nombre_foyers_fiscaux INT,
+    revenu_fiscal_reference_milliers BIGINT,
+    nombre_foyers_imposes INT,
+    revenu_fiscal_reference_imposes_milliers BIGINT,
+    revenu_moyen_par_foyer_euros NUMERIC,
+    taux_foyers_imposes_pct NUMERIC,
+    PRIMARY KEY (code_departement, tranche_revenus)
+);
+
+
+-- Suppression des données pour s'assurer que la table est vierge et existante
+TRUNCATE TABLE revenu_fiscal_reference_def;
+
+
+-- Insertion des données depuis la table temporaire avec jointure sur la table département pour valider la clé étrangère
+
+INSERT INTO revenu_fiscal_reference_def (
+    code_departement,
+    tranche_revenus,
+    nombre_foyers_fiscaux,
+    revenu_fiscal_reference_milliers,
+    nombre_foyers_imposes,
+    revenu_fiscal_reference_imposes_milliers,
+    revenu_moyen_par_foyer_euros,
+    taux_foyers_imposes_pct
+)
+SELECT
+    r."Code_departement",
+    r."Tranche_revenus",
+    r."Nombre_foyers_fiscaux",
+    r."Revenu_fiscal_reference_milliers",
+    r."Nombre_foyers_imposes",
+    r."Revenu_fiscal_reference_imposes_milliers",
+
+    -- Revenu moyen par foyer en euros
+    CASE
+        WHEN r."Nombre_foyers_fiscaux" > 0
+        THEN ROUND((r."Revenu_fiscal_reference_milliers" * 1000.0)
+             / r."Nombre_foyers_fiscaux", 0)
+        ELSE NULL
+    END,
+
+    -- Taux de foyers imposés
+    CASE
+        WHEN r."Nombre_foyers_fiscaux" > 0
+        THEN ROUND(r."Nombre_foyers_imposes" * 100.0
+             / r."Nombre_foyers_fiscaux", 1)
+        ELSE NULL
+    END
+
+FROM TMP_revenu_fiscal_reference r
+-- Jointure pour ne garder que les départements présents dans la table département
+JOIN departement d
+    ON d.code = r."Code_departement"
+
+ORDER BY r."Code_departement", r."Tranche_revenus";
+
+
+
+-- Intégration dans notre base de données du 3ème enrichissements sur les IPS des lycées.
+
+
+-- Création de la table IPS issus de notre enrichissement de donnée afin de créer des vues sur le rapport entre l'IPS départemental et le taux de recrutement des néo-bâcheliers dans les lycées.
+
+create table IPS_Lycee(
+    id serial primary key,  
+    Code_UAI VARCHAR(250) references etablissement(id),
+    Typologie VARCHAR(250),
+    IPS_Etablissement float,
+    IPS_LEGT float, 
+    IPS_PRO float,
+    IPS_Post_Bac float,
+    Ecart_Type_GT float, 
+    Ecart_Type_PRO float, 
+    Ecart_Type_Etablissement float
+);
+
+-- Supprimer les données afin de s'assurer que la table est vierge et existante.
+
+truncate table IPS_Lycee;
+
+-- Ajout des données dans la table 
+
+INSERT INTO IPS_Lycee(
+    Code_UAI,
+    Typologie,
+    IPS_Etablissement,
+    IPS_LEGT,
+    IPS_PRO,
+    IPS_Post_Bac,
+    Ecart_Type_GT,
+    Ecart_Type_PRO,
+    Ecart_Type_Etablissement
+)
+SELECT 
+    uai."Code_UAI",        
+    l."Type_lycée" AS Typologie,
+    l."IPS_Etablissement",
+    l."IPS_LEGT",
+    l."IPS_PRO", 
+    l."IPS_Post_BAC", 
+    l."Ecart_Type_GT", 
+    l."Ecart_Type_PRO", 
+    l."Ecart_Type_Etablissement"
+FROM (
+    -- On récupère les codes UAI distincts des deux tables
+    SELECT "Code_UAI" FROM tmp_parcoursup2018
+    UNION
+    SELECT "Code_UAI" FROM tmp_parcoursup2024
+) AS uai
+JOIN TMP_IPS_Lycee_College l ON l."Code_UAI" = uai."Code_UAI"
+where l."Session" = '2023-2024';
+
+
+
+
+-- Création de la table IPS_globaux
+
+create table IPS_Globaux(
+    id serial primary key, 
+    Region_id int references region(id),
+    Academie_id int REFERENCES academie(id),
+    Departement_id VARCHAR(100) references departement(code),
+    Commune_id int REFERENCES commune(id),
+    IPS_Academique_LEGT float,
+    IPS_Academique_LPO float,
+    IPS_Academique_LP float,
+    IPS_Academique_LEGT_Prive float,
+    IPS_Academique_LEGT_Public float,
+    IPS_Academique_LPO_Prive float,
+    IPS_Academique_LPO_Public float,
+    IPS_Academique_LP_Prive float,
+    IPS_Academique_LP_Public float,
+    IPS_Departemental_LEGT float,
+    IPS_Departemental_LPO float,
+    IPS_Départemental_LP float,
+    IPS_Departemental_LEGT_Prive float,
+    IPS_Departemental_LEGT_Public float,
+    IPS_Departemental_LPO_Prive float,
+    IPS_Departemental_LPO_Public float,
+    IPS_Departemental_LP_Prive float,
+    IPS_Departemental_LP_Public float,
+
+    UNIQUE (Departement_id, Academie_id, Region_id) -- contrainte : département, académie et région ne peuvent être présent que sur une seule ligne
+);
+
+-- Supprimer les données afin de s'assurer que la table est vierge et existante
+
+truncate table IPS_Globaux;
+
+-- Ajout des données dans la table 
+
+Insert into IPS_Globaux(
+    Region_id,
+    Academie_id,
+    Departement_id,
+    Commune_id,
+    IPS_Academique_LEGT,
+    IPS_Academique_LPO,
+    IPS_Academique_LP,
+    IPS_Academique_LEGT_Prive,
+    IPS_Academique_LEGT_Public,
+    IPS_Academique_LPO_Prive,
+    IPS_Academique_LPO_Public,
+    IPS_Academique_LP_Prive,
+    IPS_Academique_LP_Public,
+    IPS_Departemental_LEGT,
+    IPS_Departemental_LPO,
+    IPS_Départemental_LP,
+    IPS_Departemental_LEGT_Prive,
+    IPS_Departemental_LEGT_Public,
+    IPS_Departemental_LPO_Prive,
+    IPS_Departemental_LPO_Public,
+    IPS_Departemental_LP_Prive,
+    IPS_Departemental_LP_Public
+)
+select distinct on(d.code)
+    r.id as Region_id,
+    a.id as Academie_id,
+    d.code as Departement_id,
+    c.id as Commune_id,
+    l."IPS_Academique_LEGT",
+    l."IPS_Academique_LPO",
+    l."IPS_Academique_LP",
+    l."IPS_Academique_LEGT_Prive",
+    l."IPS_Academique_LEGT_Public",
+    l."IPS_Academique_LPO_Prive",
+    l."IPS_Academique_LPO_Public",
+    l."IPS_Academique_LP_Prive",
+    l."IPS_Academique_LP_Public",
+    l."IPS_Departemental_LEGT",
+    l."IPS_Departemental_LPO",
+    l."IPS_Départemental_LP",
+    l."IPS_Departemental_LEGT_Prive",
+    l."IPS_Departemental_LEGT_Public",
+    l."IPS_Departemental_LPO_Prive",
+    l."IPS_Departemental_LPO_Public",
+    l."IPS_Departemental_LP_Prive",
+    l."IPS_Departemental_LP_Public"
+from TMP_IPS_Lycee_College l 
+join region r
+on l.région = r.nom
+join academie a 
+on l."Académie" = a.nom
+join departement d
+on l."Département_id" = d.code
+join commune c
+on l."Commune_nom" = c.nom
+where l."Session" = '2023-2024';
+
+-- Création d'un etbale IPS nationaux. Elle n'est reliée à rien, elle servira de donnée de référence pour faire une vue permettant d'analyser si le taux d'admission des boursiers est plus élevés dans les établissement/Académie/Région en dessous de moyennes nationales.
+-- Cette table fera donc simplement l'objet d'un CROSS JOIN qui permettra d'ajouter cette valeur comme référence. 
+
+CREATE TABLE IPS_Nationaux (
+    id SERIAL PRIMARY KEY,
+    IPS_National_LEGT FLOAT,
+    IPS_National_LPO FLOAT,
+    IPS_National_LP FLOAT,
+    IPS_National_LEGT_Prive FLOAT,
+    IPS_National_LEGT_Public FLOAT,
+    IPS_National_LPO_Prive FLOAT,
+    IPS_National_LPO_Public FLOAT,
+    IPS_National_LP_Prive FLOAT,
+    IPS_National_LP_Public FLOAT
+);
+
+
+-- S'assurer que le table est vide et existante 
+
+truncate table IPS_Nationaux;
+
+
+-- Ajout des données dans la table 
+
+insert into IPS_Nationaux(
+    IPS_National_LEGT,
+    IPS_National_LPO,
+    IPS_National_LP,
+    IPS_National_LEGT_Prive,
+    IPS_National_LEGT_Public,
+    IPS_National_LPO_Prive,
+    IPS_National_LPO_Public,
+    IPS_National_LP_Prive,
+    IPS_National_LP_Public
+) -- pas besoin de la lié via clé étrangère à une autre table. On l'appelera dans nos vue via un Cross Join.
+select distinct
+    l."IPS_National",
+    l."IPS_National_LGPO",
+    l."IPS_National_LP",
+    l."IPS_National_LEGT_Prive",
+    l."IPS_National_LEGT_Public",
+    l."IPS_National_LPO_Prive",
+    l."IPS_National_LPO_Public",
+    l."IPS_National_LP_Prive",
+    l."IPS_National_LP_Public"
+from TMP_IPS_Lycee_College l
+where l."Session" = '2023-2024';
+
 -- Fin de la transaction.
 COMMIT;
