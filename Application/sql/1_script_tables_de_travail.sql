@@ -14,11 +14,11 @@ SELECT
     CAST("Annee" as INT) as "Annee",
 	TRIM("Code_UAI") as "Code_UAI",
 	TRIM("Etablissement") as "Etablissement",
-	CASE -- Permet de normaliser avec efficacité les le code départemental de la Corse du Sud. Manquant ici.
+	CASE -- Permet de normaliser avec efficacité le code départemental de la Corse du Sud.
         WHEN TRIM(INITCAP("Departement_etablissement")) = 'Corse-Du-Sud' THEN '2A'
         ELSE TRIM(CAST("Code_departemental_etablissement" as VARCHAR(100)))
     END AS "Code_departemental_etablissement",
-	CASE -- Permet de noramliser avec efficacité la graphie de Corse-Du-Sud. 
+	CASE -- Permet de normaliser avec efficacité les tirets de Corse-Du-Sud. 
 		WHEN TRIM(INITCAP("Departement_etablissement")) = 'Corse Du Sud' THEN 'Corse-Du-Sud'
 		ELSE TRIM(INITCAP("Departement_etablissement"))
 	END AS "Departement_etablissement",
@@ -53,7 +53,7 @@ SELECT
 	TRIM("Lien_formation_Parcoursup") as "Lien_formation_parcoursup",
 	TRIM("Coordonnees_GPS_formation") as "Coordonnees_gps_formation",
 	CAST("Capacite_etablissement_formation" as INT) as "Capacite_etablissement_formation",
-	CAST("ET_C" as INT) as "ET_C", -- Entre 2018 et 2024, le type n'est pas toujours au beau fixe entre 2018 et 2024 entre INT et FLOAT. Afin d'éviter toute incompatibilité, recourt à un CAST manuel en INT de toutes les données numériques.
+	CAST("ET_C" as INT) as "ET_C", -- Entre 2018 et 2024, le type n'est pas toujours fixe entre 2018 et 2024 entre INT et FLOAT. Afin d'éviter toute incompatibilité, nous avons eu recourt à un CAST en INT de toutes les données numériques.
 	CAST("ET_CF" as INT) as "ET_CF",
 	CAST("ET_CP" as INT) as "ET_CP",
 	CAST("ET_C_PP" as INT) as "ET_C_PP",
@@ -149,13 +149,13 @@ SELECT
 		WHEN TRIM("Commune_etablissement") = 'Sarrola-Carcopino' THEN '2A'
         WHEN TRIM("Commune_etablissement") = 'Borgo' THEN '2B'
 		ELSE TRIM(CAST("Code_departemental_etablissement" as VARCHAR(100)))
-	END AS "Code_departemental_etablissement", -- Disparition des codes départementaux de Corse au profit de "20" ou une cellule vide. Alignement forcé sur 2018 pour la cohérence des données.
+	END AS "Code_departemental_etablissement", -- Disparition des codes départementaux de Corse au profit de "20" ou d'une cellule vide. Alignement forcé sur 2018 pour la cohérence des données.
 	CASE 
 		WHEN TRIM("Commune_etablissement") = 'Sarrola-Carcopino' THEN 'Corse-Du-Sud'
         WHEN TRIM("Commune_etablissement") = 'Borgo' THEN 'Haute-Corse'
 		WHEN TRIM(INITCAP("Departement_etablissement")) = 'Corse Du Sud' THEN 'Corse-Du-Sud'
 		ELSE TRIM(INITCAP("Departement_etablissement"))
-	END AS "Departement_etablissement", -- Les département de Corse ont disparus au profit de "Corse". Pour éviter une incompabilité et garder un maximum de granularité, nous avons normalisé cela.
+	END AS "Departement_etablissement", -- Les départements de Corse ont disparus au profit de "Corse". Pour éviter une incompabilité, nous avons normalisé cela.
     CASE
         WHEN TRIM("Region_etablissement") = 'Auvergne-Rhône-Alpes' THEN 'Auvergne-Rhône-Alpes'
         WHEN TRIM("Region_etablissement") = 'Bourgogne-Franche-Comté' THEN 'Bourgogne-Franche-Comté'
@@ -178,7 +178,7 @@ SELECT
 		WHEN TRIM("Academie_etablissement") = 'Etranger' THEN 'Etranger'
 		WHEN TRIM("Academie_etablissement") = 'Polynésie Française' THEN 'Polynésie Française'
         ELSE TRIM("Region_etablissement")
-    END as "Region_etablissement" , -- Permet de s'assurer que l'on a les même régions présent aux mêmes endroits dans nos deux jeux de données.
+    END as "Region_etablissement" , -- Permet de s'assurer que l'on a les mêmes régions présentes aux mêmes endroits dans nos deux jeux de données.
 	TRIM("Academie_etablissement") as "Academie_etablissement",
 	TRIM("Commune_etablissement") as "Commune_etablissement",
 	TRIM("Filiere_formation") as "Filiere_formation",
@@ -193,7 +193,7 @@ SELECT
 	TRIM("Filiere_formation_détaillée") as "Filiere_formation_détaillée",
 	TRIM("Coordonnees_GPS_formation") as "Coordonnees_gps_formation",
 	CAST("Capacite_etablissement_formation" as INT) as "Capacite_etablissement_formation",
-	CAST("ET_C" as INT) as "ET_C", -- Entre 2018 et 2024, le type n'est pas toujours au beau fixe entre 2018 et 2024 entre INT et FLOAT. Afin d'éviter toute incompatibilité, recourt à un CAST manuel en INT de toutes les données numériques.
+	CAST("ET_C" as INT) as "ET_C", -- Entre 2018 et 2024, le type n'est pas toujours fixe entre 2018 et 2024 entre INT et FLOAT. Afin d'éviter toute incompatibilité, recourt à un CAST manuel en INT de toutes les données numériques.
 	CAST("ET_CF" as INT) as "ET_CF",
 	CAST("ET_C_PP" as INT) as "ET_C_PP",
 	CAST("EC_I" as INT) as "EC_I",
@@ -300,7 +300,7 @@ FROM
 
 
 
--- Création de la table temporaire pour la population par région en 2024 (1er enrichissements)
+-- Création de la table temporaire pour la population par région en 2024 (1er enrichissement)
 
 CREATE TABLE TMP_resultat_pivot_2024 AS (
 SELECT
@@ -329,7 +329,7 @@ FROM
 );
 
 
--- Creation de table temporaire pour la population par région en 2018 (1er enrichissements)
+-- Creation de table temporaire pour la population par région en 2018 (1er croisement)
 
 CREATE TABLE TMP_resultat_pivot_2018 AS (
 SELECT
@@ -359,7 +359,7 @@ FROM
 
 
 
---création d'une table temporaire à partir du csv sur le revenu fiscal de reference (2ème enrichissement)
+--création d'une table temporaire à partir du csv sur le revenu fiscal de reference (2ème croisement)
 
 
 CREATE TABLE TMP_revenu_fiscal_reference AS
@@ -429,7 +429,7 @@ ORDER BY
     "Tranche_revenus";
 
 
--- Création de la table temporaire sur les IPS des lycée (3ème enrichissements)
+-- Création de la table temporaire sur les IPS des lycée (3ème croisement)
 
 CREATE TABLE TMP_IPS_Lycee_College AS (
 SELECT

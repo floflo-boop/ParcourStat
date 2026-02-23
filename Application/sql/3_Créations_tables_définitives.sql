@@ -73,7 +73,7 @@ CREATE table commune (
   departement_id VARCHAR(100) REFERENCES departement(code)
 );
 
--- Supression des données de la table pour s'assurer qu'elle soit vierge et qu'elle existe 
+-- Suppression des données de la table pour s'assurer qu'elle soit vierge et qu'elle existe 
 
 truncate table commune;
 
@@ -83,7 +83,7 @@ INSERT INTO commune (nom, departement_id)
 SELECT DISTINCT 
     tp."Commune_etablissement",
     d.code
-FROM tmp_parcoursup2024 tp -- Il n'y a pas de commune dans le jeu de donnée de 2018. On ne se base donc que sur 2024.
+FROM tmp_parcoursup2024 tp -- Il n'y a pas de communes dans le jeu de donnée de 2018. On ne se base donc que sur 2024.
 INNER JOIN Departement d ON tp."Departement_etablissement" = d.nom;
 
 -- Attention, en sortie on peut avoir des "doublons" par exemple Valence se repète deux fois mais à deux clés primaires différentes, et deux clés étrangères 
@@ -99,7 +99,7 @@ CREATE TABLE academie (
   nom TEXT
 );
 
--- Supression des données de la table pour s'assurer qu'elle soit vierge et qu'elle existe 
+-- Suppression des données de la table pour s'assurer qu'elle soit vierge et qu'elle existe 
 
 truncate table academie;
 
@@ -129,7 +129,7 @@ CREATE TABLE etablissement (
   Academie_id  INT REFERENCES academie(id)
 );
 
--- Supression des données de la table pour s'assurer qu'elle soit vierge et qu'elle existe 
+-- Suppression des données de la table pour s'assurer qu'elle soit vierge et qu'elle existe 
 
 truncate table etablissement;
 
@@ -149,7 +149,7 @@ INSERT INTO etablissement (
     Academie_id
 ) 
 SELECT DISTINCT ON (COALESCE(tp2024."Code_UAI", tp2018."Code_UAI")) /* On élimine un maximum de doublons à l'aide de DISTINCT et de COALESCE qui permet de sélectionner une priorité de valeur. 
-Si, pour un même champ, il existe deux valeurs différentes, une des deux sera privéligée. Dans notre cas, des valeurs NULL en 2018 sont complétées en 2024. La priorité est donc donnée à 2024 */
+Si, pour un même champ, il existe deux valeurs différentes, une des deux sera privilégiée. Dans notre cas, des valeurs NULL en 2018 sont complétées en 2024. La priorité est donc donnée à 2024 */
     COALESCE(tp2024."Code_UAI", tp2018."Code_UAI") AS Id,
     COALESCE(tp2024."Etablissement", tp2018."Etablissement") AS Nom,
     tp2024."Statut_etablissement_filière_formation" AS Statut,
@@ -475,7 +475,7 @@ from ( -- Création d'une sous requête pour mieux gérer les valeurs NULL, les 
         p2."ETC_CE" as ETC_CE,
         p2."EC_CE_PC" as EC_CE_PC,
         p2."ETC_R_PA" as ETC_R_PA,
-        null::INT as ETC_A_PE, -- On force la validation du null en valeur INT. Comme en 2018 nous n'avons pas ces colonnes, mais qu'elles ont un réelle intérêt pour nous en 2024, nous forçon SQL à accepter le NULL comme valeur. Seul moyen pour éviter la suppression pure des colonnes. 
+        null::INT as ETC_A_PE, -- On force la validation du null en valeur INT. Comme en 2018 nous n'avons pas ces colonnes, mais qu'elles ont un réelle intérêt pour nous en 2024, nous forçon SQL à accepter le NULL comme valeur. Seul moyen pour éviter la suppression  des colonnes. 
         null::INT as ETC_F_A_PE,
         null::INT as EC_TG_PA_E,
         null::INT as EC_B_TG_PA_E,
@@ -747,9 +747,9 @@ group by formation_id, annee; -- on garde intacte l'entité créer dans CREATE a
 
 
 
--- Intégration dans notre base de données de notre premier enrichissements dans sa forme définitive.
+-- Intégration dans notre base de données de notre premier croisement dans sa forme définitive.
 
--- Création et remplissage simultannée de la table Population.
+-- Création et remplissage simultané de la table Population.
 
 CREATE TABLE population AS (
     SELECT LTRIM("dep", '0') AS "dep", "sexe", "annee",
@@ -771,7 +771,7 @@ ALTER TABLE population
 
 
 
--- Intégration dans notre base de donnée de notre deuxième enrichissements dans sa forme définitive.
+-- Intégration dans notre base de donnée de notre deuxième croise,ent dans sa forme définitive.
 
 
 -- Creation de la table définitive revenu_fiscal_reference.
@@ -990,7 +990,7 @@ join commune c
 on l."Commune_nom" = c.nom
 where l."Session" = '2023-2024';
 
--- Création d'un etbale IPS nationaux. Elle n'est reliée à rien, elle servira de donnée de référence pour faire une vue permettant d'analyser si le taux d'admission des boursiers est plus élevés dans les établissement/Académie/Région en dessous de moyennes nationales.
+-- Création d'un table IPS nationaux. Elle n'est reliée à rien, elle servira de donnée de référence pour faire une vue permettant d'analyser si le taux d'admission des boursiers est plus élevés dans les établissement/Académie/Région en dessous de moyennes nationales.
 -- Cette table fera donc simplement l'objet d'un CROSS JOIN qui permettra d'ajouter cette valeur comme référence. 
 
 CREATE TABLE IPS_Nationaux (
@@ -1024,7 +1024,7 @@ insert into IPS_Nationaux(
     IPS_National_LPO_Public,
     IPS_National_LP_Prive,
     IPS_National_LP_Public
-) -- pas besoin de la lié via clé étrangère à une autre table. On l'appelera dans nos vue via un Cross Join.
+) -- pas besoin de la lier via clé étrangère à une autre table. On l'appelera dans nos vues via un Cross Join.
 select distinct
     l."IPS_National",
     l."IPS_National_LGPO",

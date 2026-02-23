@@ -7,13 +7,11 @@ SET search_path TO "ParcourStat";
 
 /* 
 
-Après examen de notre jeu de données, nous avons remarqué qu'entre 2018 et 2024 certains établissements changent de noms ou de type de saisie.
-La problématique réside dans le Code_UAI, qui ne change pas, ce qui, sans normalisation, créerait deux valeurs pour un même code. 
+Après examen de notre jeu de données, nous avons remarqué qu'entre 2018 et 2024 certains établissements changent de noms ou de type de saisie. La problématique réside dans le Code_UAI, qui ne change pas, ce qui, sans normalisation, créerait deux valeurs pour un même code. 
 
 Nous avons donc pensé cette requête afin de normaliser les noms des établissements communs aux deux jeux de données, au sein de tables temporaires. 
 
-Le script se base sur le Code_UAI : s'il repère le même Code_UAI avec deux valeurs différentes dans la colonne "Etablissement", alors il normalise 
-en appliquant au jeu de donnée 2018, la valeur de 2024. 
+Le script se base sur le Code_UAI : s'il repère le même Code_UAI avec deux valeurs différentes dans la colonne "Etablissement", alors il normalise en appliquant au jeu de donnée 2018, la valeur de 2024. 
 
 De cette manière, nous facilitons l'insertion future des données dans les tables définitives et réduisons les conflits de clés primaires.
 
@@ -23,9 +21,9 @@ En effet, 29 établissements en 2018 présentent en Code_UAI 'identifiant obsol�
 Ainsi nous avons pensé une seconde requête qui se base sur les coordonnées GPS. Si des enregistrements ont les même coordonnées GPS 
 entre 2018 et 2024 mais des valeurs différentes dans "Etablissement" et "Code_UAI", la normalisation s'effectue selon la grahie de 2024.
 
-Après de multiples vérifications basé sur de multiples critères, ces établissement ne semblent pas avoir leurs équivalent strict en 2024. 
-Nous nous retrouvons dans l'impossibilité de croiser ces données, et avons donc été contraints d'effacer ces données de nos tables temporaires ces données. 
-Néanmoins, nous laissons la seconde requête comme un cran de sûreté quant à l'efficacité de la première requête.
+Après de multiples vérifications, ces établissement ne semblent pas avoir leurs équivalent strict en 2024. 
+Nous nous retrouvons dans l'impossibilité de croiser ces données, et avons donc été contraints d'effacer ces données de nos tables temporaires. 
+Néanmoins, nous laissons la seconde requête par sûreté.
 
 */
 
