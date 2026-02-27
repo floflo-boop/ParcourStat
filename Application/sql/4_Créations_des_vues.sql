@@ -190,99 +190,90 @@ FROM ips_region_agg;
 
 
 
- -- Creation d'une vue pour comparer les admis dans le supérieur et la population par département en 2024
- 
-CREATE VIEW admis_pop_2024 as
+-- Creation d'une vue qui regroupe le nombre total d'admis par département et par année, et la population totale et la population des 15-19 ans
+CREATE VIEW pop_admis_annee AS
+
 SELECT
-    d."code"                                                            AS "code_departement",
-    d."nom"                                                             AS "nom_departement",
-    SUM(a."ea_ac" + a."ea_nb")                                         AS "total_ea",
-    p."total_pop_15_24",
-    p."total_population",
-    -- Part des jeunes dans la population : si faible = département vieux
-    ROUND(p."total_pop_15_24" * 100.0
-        / NULLIF(p."total_population", 0), 2)                          AS "part_jeunes_pct"
+   -- Code du département
+   d."code" AS "code_departement",
+
+   -- Nom du département
+   d."nom" AS "nom_departement",
+
+   -- Année d'admission
+   a."annee",
+
+   -- Total des effectifs admis (ea_ac + ea_nb) ea_ac et ea_nb représentent deux types d'admissions
+   SUM(a."ea_ac" + a."ea_nb") AS "total_ea",
+
+   -- Population totale des 15-19 ans pour le département et l'année
+   p."total_pop_15_19" AS "total_pop_15_19",
+
+   -- Population totale tous âges confondus
+   p."total_population" AS "total_population"
+
 FROM admissions a
-JOIN formation f         ON a."formation_id"     = f."id"
-JOIN etablissement e     ON f."etablissement_id" = e."id"
-JOIN commune c           ON e."commune_id"        = c."id"
-JOIN departement d       ON c."departement_id"    = d."code"
-JOIN (
-    SELECT "dep",
-        SUM("age_15_19" + "age_20_24")                                 AS "total_pop_15_24",
-        SUM("age_0_4" + "age_5_9" + "age_10_14" + "age_15_19" + "age_20_24" +
-            "age_25_29" + "age_30_34" + "age_35_39" + "age_40_44" + "age_45_49" +
-            "age_50_54" + "age_55_59" + "age_60_64" + "age_65_69" + "age_70_74" +
-            "age_75_79" + "age_80_plus")                               AS "total_population"
-    FROM population
-    WHERE "annee" = '2024'
-    GROUP BY "dep"
-) p ON p."dep" = d."code"
-WHERE a."annee" = 2024
-GROUP BY d."code", d."nom", p."total_pop_15_24", p."total_population"
-ORDER BY d."code";
 
+-- Jointure pour relier une admission à sa formation
+JOIN formation f
+   ON a."formation_id" = f."id"
 
--- Creation d'une vue pour observer l'évolution comparée des admissions et de la population des 15-19 ans et des 20-24 ans par département entre 2018 et 2024
-CREATE VIEW variation_demo_admissions as
-SELECT
-    d."code"                                                            AS "code_departement",
-    d."nom"                                                             AS "nom_departement",
-    -- Admissions 2018 et 2024
-    ea."total_ea_2018",
-    ea."total_ea_2024",
-    ea."total_ea_2024" - ea."total_ea_2018"                             AS "variation_ea",
-    ROUND((ea."total_ea_2024" - ea."total_ea_2018") * 100.0
-        / NULLIF(ea."total_ea_2018", 0), 2)                             AS "variation_ea_pct",
-    -- Population 15-19 ans
-    pop."total_pop_15_19_2018",
-    pop."total_pop_15_19_2024",
-    pop."total_pop_15_19_2024" - pop."total_pop_15_19_2018"             AS "variation_pop_15_19",
-    ROUND((pop."total_pop_15_19_2024" - pop."total_pop_15_19_2018") * 100.0
-        / NULLIF(pop."total_pop_15_19_2018", 0), 2)                     AS "variation_pop_15_19_pct",
-    -- Population 20-24 ans
-    pop."total_pop_20_24_2018",
-    pop."total_pop_20_24_2024",
-    pop."total_pop_20_24_2024" - pop."total_pop_20_24_2018"             AS "variation_pop_20_24",
-    ROUND((pop."total_pop_20_24_2024" - pop."total_pop_20_24_2018") * 100.0
-        / NULLIF(pop."total_pop_20_24_2018", 0), 2)                     AS "variation_pop_20_24_pct",
-    -- Population totale
-    pop."total_population_2018",
-    pop."total_population_2024",
-    ROUND((pop."total_population_2024" - pop."total_population_2018") * 100.0
-        / NULLIF(pop."total_population_2018", 0), 2)                     AS "variation_pop_totale_pct"
-FROM departement d
-JOIN (
-    SELECT
-        c."departement_id",
-        SUM(CASE WHEN a."annee" = 2018 THEN a."ea_ac" + a."ea_nb" ELSE 0 END) AS "total_ea_2018",
-        SUM(CASE WHEN a."annee" = 2024 THEN a."ea_ac" + a."ea_nb" ELSE 0 END) AS "total_ea_2024"
-    FROM admissions a
-    JOIN formation f     ON a."formation_id"     = f."id"
-    JOIN etablissement e ON f."etablissement_id" = e."id"
-    JOIN commune c       ON e."commune_id"        = c."id"
-    GROUP BY c."departement_id"
-) ea ON ea."departement_id" = d."code"
-JOIN (
-    SELECT
-        "dep",
-        SUM(CASE WHEN "annee" = '2018' THEN "age_15_19" ELSE 0 END)    AS "total_pop_15_19_2018",
-        SUM(CASE WHEN "annee" = '2024' THEN "age_15_19" ELSE 0 END)    AS "total_pop_15_19_2024",
-        SUM(CASE WHEN "annee" = '2018' THEN "age_20_24" ELSE 0 END)    AS "total_pop_20_24_2018",
-        SUM(CASE WHEN "annee" = '2024' THEN "age_20_24" ELSE 0 END)    AS "total_pop_20_24_2024",
-        SUM(CASE WHEN "annee" = '2018' THEN
-            "age_0_4" + "age_5_9" + "age_10_14" + "age_15_19" + "age_20_24" +
-            "age_25_29" + "age_30_34" + "age_35_39" + "age_40_44" + "age_45_49" +
-            "age_50_54" + "age_55_59" + "age_60_64" + "age_65_69" + "age_70_74" +
-            "age_75_79" + "age_80_plus" ELSE 0 END)                     AS "total_population_2018",
-        SUM(CASE WHEN "annee" = '2024' THEN
-            "age_0_4" + "age_5_9" + "age_10_14" + "age_15_19" + "age_20_24" +
-            "age_25_29" + "age_30_34" + "age_35_39" + "age_40_44" + "age_45_49" +
-            "age_50_54" + "age_55_59" + "age_60_64" + "age_65_69" + "age_70_74" +
-            "age_75_79" + "age_80_plus" ELSE 0 END)                     AS "total_population_2024"
-    FROM population
-    GROUP BY "dep"
-) pop ON pop."dep" = d."code"
-ORDER BY d."code";
+-- Jointure pour relier la formation à l'établissement
+JOIN etablissement e
+   ON f."etablissement_id" = e."id"
 
+-- Jointure pour relier l'établissement à la commune
+JOIN commune c
+   ON e."commune_id" = c."id"
+
+-- Jointure pour relier la commune au département
+JOIN departement d
+   ON c."departement_id" = d."code"
+
+-- Sous-requête qui agrège la population par département et par année
+JOIN (
+   SELECT
+       "dep",
+
+       -- Conversion explicite de l'année en entier
+       CAST("annee" AS INT) AS "annee",
+
+       -- Somme de la population des 15-19 ans
+       SUM("age_15_19") AS "total_pop_15_19",
+
+       -- Somme de toutes les tranches d'âge pour obtenir la population totale
+       SUM(
+           "age_0_4" + "age_5_9" + "age_10_14" + "age_15_19" + "age_20_24" +
+           "age_25_29" + "age_30_34" + "age_35_39" + "age_40_44" + "age_45_49" +
+           "age_50_54" + "age_55_59" + "age_60_64" + "age_65_69" + "age_70_74" +
+           "age_75_79" + "age_80_plus"
+       ) AS "total_population"
+
+   FROM population
+
+   -- Agrégation par département et par année
+   GROUP BY "dep", "annee"
+
+) p
+
+-- Jointure entre la population agrégée et les admissions sur le département et l'année
+ON p."dep" = d."code"
+AND p."annee" = a."annee"
+
+-- Regroupement nécessaire car on utilise SUM()
+GROUP BY
+   d."code",
+   d."nom",
+   a."annee",
+   p."total_pop_15_19",
+   p."total_population"
+
+-- Tri des résultats par département puis par année
+ORDER BY
+   d."code",
+   a."annee";
+
+-- Validation finale de la transaction
 COMMIT;
+
+
