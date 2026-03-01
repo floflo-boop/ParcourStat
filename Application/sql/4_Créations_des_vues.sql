@@ -8,9 +8,6 @@ SET search_path TO "ParcourStat";
 
 -- Création d'une vue permettant de montrer le nombre de formation par région. 
 -- Cela permet de créer une première connaissance : la répartition inégale de l'accès à la formation supérieure dû à la concentration des formations en île de France et à la rareté de ces formations notamment dans les Territoires d'Outre Mer et les lieux d'expatriation.
--- Nous pourrions utiliser un jeu de données sur le taux de ruralités dans les régions afin de faire ressortir la répartition des formations en fonction de l'urbanisation. 
--- Cela crée une nouvelle information : la répartition inégale de l'accès à l'enseignement supérieur en fonction d'un critère de ruralité. 
--- Mais peu révélateur quant à l'inégalité de la repartition des formations d'enseignement supérieur sur le territoire français en fonction de l'éloignement avec la capitale française.
 
 create view nombre_formation_par_region as  
 	select r.nom as region, count(f.id ) as nbr_formation 
@@ -28,10 +25,6 @@ create view nombre_formation_par_region as
 
 
 -- Création d'une vue permettant de montrer le taux d'acceptation des filles dans les disciplines en combinant 2018 et 2024. 
--- Le chiffre est calculé en fonction du rapport candidates/admises. Donc 25 par exemple voudrait que seulement 25 des candidates aient été acceptées.
--- Cela permet de créer une première connaissance sur la parité dans les formations. 
--- Cette vue est à enrichir, elle n'est pour le moment pas encore élaborée à son maximum. 
-
 
 create view taux_filles_acceptées_par_disciplines as 
 	select d.nom as discipline, AVG(a.pa_f) as taux_acceptation_candidates
@@ -63,8 +56,6 @@ join commune ON etablissement.commune_id = commune.id
 join departement ON commune.departement_id = departement.code
 join region ON departement.region_id = region.id
 group by region.nom;
-
-
 
 
 
@@ -115,8 +106,6 @@ ON tt.id = dt.type;
 
 -- Création d'une vue permettant de croiser nos informations sur les admissions des boursiers et les IPS. 
 -- Vue générale qui permet de comparer une analyses multi échelles et multi critère.
--- Servira de base pour une autre vue et offre diverses possibilités de visualisation.
-
 
 CREATE VIEW Boursiers_et_IPS as
 SELECT
